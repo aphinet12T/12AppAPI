@@ -3,10 +3,7 @@ require('dotenv').config();
 
 const connectDBAppCA = async () => {
     try {
-        const conn = await mongoose.connect(process.env.CVS_DB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        })
+        const conn = await mongoose.connect(process.env.CVS_DB_URI)
         console.log('Cash Database connected');
         return conn;
     } catch (error) {
