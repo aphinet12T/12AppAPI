@@ -4,7 +4,7 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage }).single('storeImage');
 
-const currentdaten = () => {
+const timestamp = () => {
     const date = new Date();
     return `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
 };
@@ -23,10 +23,10 @@ exports.uploadImage = async (req, res) => {
                 throw new Error('No file uploaded');
             }
 
-            const imageName = `${Date.now()}-${currentdaten()}${path.extname(image.originalname)}`;
+            const imageName = `${Date.now()}-${timestamp()}${path.extname(image.originalname)}`;
             const imageDir = path.join(__dirname, '../public/images/stores', area);
-            const imageSave = path.join(process.env.CVS_IMG_URI,'/stores', area);
-
+            const imageSave = process.env.CVS_IMG_URI+path.join('/stores', area);
+            
             if (!fs.existsSync(imageDir)) {
                 await fs.promises.mkdir(imageDir, { recursive: true });
             }
@@ -43,17 +43,5 @@ exports.uploadImage = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ status: 501, message: error.message });
-    }
-};
-
-exports.test = async (req, res) => {
-    try {
-        res.status(200).json({
-            status: '200',
-            message: 'Success'
-        });
-    } catch (error) {
-        // await createLog('500', req.method, req.originalUrl, res.body, error.message)
-        res.status(500).json({ status: 501, message: error.message })
     }
 }

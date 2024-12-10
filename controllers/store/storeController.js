@@ -105,7 +105,7 @@ exports.addStore = async (req, res, next) => {
         //             store: item.store,
         //             similarity: item.similarity.toFixed(2),
         //         })),
-        //     });
+        //     })
         // }
 
         if (sanitizedStores.length > 0) {
