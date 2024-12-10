@@ -25,14 +25,14 @@ exports.uploadImage = async (req, res) => {
 
             const imageName = `${Date.now()}-${timestamp()}${path.extname(image.originalname)}`;
             const imageDir = path.join(__dirname, '../public/images/stores', area);
-            const imageSave = process.env.CVS_IMG_URI+path.join('/stores', area);
-            
+            const imageSave = path.join('/stores', area);
+
             if (!fs.existsSync(imageDir)) {
                 await fs.promises.mkdir(imageDir, { recursive: true });
             }
 
             const imagePath = path.join(imageDir, imageName);
-            const pathImg = path.join(imageSave, imageName);
+            const pathImg = process.env.CVS_IMG_URI+path.join(imageSave, imageName);
             await fs.promises.writeFile(imagePath, image.buffer);
 
             res.status(201).json({
