@@ -1,6 +1,11 @@
 const { Store } = require('../../models/cash/store')
+const { uploadFiles } = require('../../utilitys/upload')
 const { calculateSimilarity } = require('../../utilitys/utility')
 const _ = require('lodash')
+const multer = require('multer')
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage }).array('storeImages', 3)
+const path = require('path')
 
 exports.getStore = async (req, res) => {
     try {
@@ -14,28 +19,14 @@ exports.getStore = async (req, res) => {
 
         if (type === 'new') {
             query.createdDate = {
-                $gte: startMonth, 
-                $lt: NextMonth, 
+                $gte: startMonth,
+                $lt: NextMonth,
             };
         } else {
-            query.area 
+            query.area
         }
 
-        const data = await Store.find(query,{_id: 0, __v: 0})
-
-        // const sanitizedData = _.cloneDeepWith(data, (value, key) => {
-        //     if (key === '_id' || key === '$__' || key === '$isNew' || key === '__v') {
-        //         return undefined; 
-        //     }
-        //     if (Array.isArray(value)) {
-        //         return value.map((item) =>
-        //             _.omit(item, ['_id', '$__', '$isNew', '__v'])
-        //         );
-        //     }
-        //     if (typeof value === 'object' && value !== null) {
-        //         return _.omit(value, ['_id', '$__', '$isNew', '__v']);
-        //     }
-        // });
+        const data = await Store.find(query, { _id: 0, __v: 0 })
 
         if (data.length === 0) {
             return res.status(204).json()
@@ -51,133 +42,274 @@ exports.getStore = async (req, res) => {
     }
 }
 
+// exports.addStore = async (req, res, next) => {
+//     const store = req.body;
+//     try {
+//         const existingStores = await Store.find({}, { _id: 0, __v: 0, idIndex: 0 });
+
+//         const fieldsToCheck = [
+//             'name',
+//             'taxId',
+//             'tel',
+//             'address',
+//             'district',
+//             'subDistrict',
+//             'province',
+//             'postCode',
+//             'latitude',
+//             'longtitude',
+//         ];
+
+//         const similarStores = existingStores
+//             .map((existingStore) => {
+//                 let totalSimilarity = 0;
+//                 fieldsToCheck.forEach((field) => {
+//                     const similarity = calculateSimilarity(
+//                         store[field]?.toString() || '',
+//                         existingStore[field]?.toString() || ''
+//                     );
+//                     totalSimilarity += similarity;
+//                 });
+
+//                 const averageSimilarity = totalSimilarity / fieldsToCheck.length;
+//                 return {
+//                     store: existingStore,
+//                     similarity: averageSimilarity,
+//                 };
+//             })
+//             .filter((result) => result.similarity > 50)
+//             .sort((a, b) => b.similarity - a.similarity)
+//             .slice(0, 3);
+
+//         const sanitizedStores = similarStores.map((item) => ({
+//             store: Object.fromEntries(
+//                 Object.entries(item.store._doc || item.store).filter(([key]) => key !== '_id')
+//             ),
+//             similarity: item.similarity.toFixed(2),
+//         }));
+
+//         // if (similarStores.length > 0) {
+//         //     return res.status(200).json({
+//         //         status: 'error',
+//         //         message: 'similar store',
+//         //         data: similarStores.map((item) => ({
+//         //             store: item.store,
+//         //             similarity: item.similarity.toFixed(2),
+//         //         })),
+//         //     })
+//         // }
+
+//         if (sanitizedStores.length > 0) {
+//             return res.status(200).json({
+//                 status: 'error',
+//                 message: 'similar store',
+//                 data: sanitizedStores,
+//             });
+//         }
+
+//         const policyAgree = {
+//             status: store.policyConsent.status,
+//         };
+//         const approve = {
+//             status: '19',
+//         };
+
+//         const imageList = Array.isArray(store.imageList) ? store.imageList : []
+//         const images = imageList.map((image) => ({
+//             name: image.name || '',
+//             path: image.path || '',
+//             type: image.type || '',
+//         }))
+
+//         const shipping = {
+//             default: '',
+//             address: '',
+//             district: '',
+//             subDistrict: '',
+//             province: '',
+//             provinceCode: '',
+//             postCode: '',
+//             latitude: '',
+//             longtitude: '',
+//         };
+
+//         const storeData = new Store({
+//             storeId: '',
+//             name: store.name,
+//             taxId: store.taxId,
+//             tel: store.tel,
+//             route: store.route,
+//             type: store.type,
+//             typeName: store.typeName,
+//             address: store.address,
+//             district: store.district,
+//             subDistrict: store.subDistrict,
+//             province: store.province,
+//             provinceCode: store.provinceCode,
+//             postCode: store.postCode,
+//             zone: store.zone,
+//             area: store.area,
+//             latitude: store.latitude,
+//             longtitude: store.longtitude,
+//             lineId: store.lineId,
+//             note: store.note,
+//             status: store.status,
+//             approve: approve,
+//             policyConsent: policyAgree,
+//             imageList: images,
+//             shippingAddress: shipping,
+//         });
+
+//         await storeData.save();
+//         res.status(200).json({
+//             status: '200',
+//             message: 'Success'
+//         })
+//     } catch (error) {
+//         console.error('Error saving log to MongoDB:', error)
+//         res.status(500).json({ status: 'error', message: 'Server Error' })
+//     }
+// }
+
 exports.addStore = async (req, res, next) => {
-    const store = req.body;
-    try {
-        const existingStores = await Store.find({}, { _id: 0, __v: 0, idIndex: 0 });
-
-        const fieldsToCheck = [
-            'name',
-            'taxId',
-            'tel',
-            'address',
-            'district',
-            'subDistrict',
-            'province',
-            'postCode',
-            'latitude',
-            'longtitude',
-        ];
-
-        const similarStores = existingStores
-            .map((existingStore) => {
-                let totalSimilarity = 0;
-                fieldsToCheck.forEach((field) => {
-                    const similarity = calculateSimilarity(
-                        store[field]?.toString() || '',
-                        existingStore[field]?.toString() || ''
-                    );
-                    totalSimilarity += similarity;
-                });
-
-                const averageSimilarity = totalSimilarity / fieldsToCheck.length;
-                return {
-                    store: existingStore,
-                    similarity: averageSimilarity,
-                };
-            })
-            .filter((result) => result.similarity > 50)
-            .sort((a, b) => b.similarity - a.similarity)
-            .slice(0, 3);
-
-        const sanitizedStores = similarStores.map((item) => ({
-            store: Object.fromEntries(
-                Object.entries(item.store._doc || item.store).filter(([key]) => key !== '_id')
-            ),
-            similarity: item.similarity.toFixed(2),
-        }));
-
-        // if (similarStores.length > 0) {
-        //     return res.status(200).json({
-        //         status: 'error',
-        //         message: 'similar store',
-        //         data: similarStores.map((item) => ({
-        //             store: item.store,
-        //             similarity: item.similarity.toFixed(2),
-        //         })),
-        //     })
-        // }
-
-        if (sanitizedStores.length > 0) {
-            return res.status(200).json({
-                status: 'error',
-                message: 'similar store',
-                data: sanitizedStores,
-            });
+    upload(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ status: 'error', message: err.message })
         }
+        try {
+            if (!req.body.store) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Store data is required',
+                })
+            }
 
-        const policyAgree = {
-            status: store.policyConsent.status,
-        };
-        const approve = {
-            status: '19',
-        };
+            const files = req.files
+            const store = JSON.parse(req.body.store)
+            const types = req.body.types ? req.body.types.split(',') : []            
 
-        const imageList = Array.isArray(store.imageList) ? store.imageList : []
-        const images = imageList.map((image) => ({
-            name: image.name || '',
-            path: image.path || '',
-            type: image.type || '',
-        }))
+            if (!store.name || !store.address) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Required fields are missing: name, taxId, address',
+                });
+            }
 
-        const shipping = {
-            default: '',
-            address: '',
-            district: '',
-            subDistrict: '',
-            province: '',
-            provinceCode: '',
-            postCode: '',
-            latitude: '',
-            longtitude: '',
-        };
+            const existingStores = await Store.find({}, { _id: 0, __v: 0, idIndex: 0 })
+            const fieldsToCheck = [
+                'name',
+                'taxId',
+                'tel',
+                'address',
+                'district',
+                'subDistrict',
+                'province',
+                'postCode',
+                'latitude',
+                'longtitude',
+            ];
 
-        const storeData = new Store({
-            storeId: '',
-            name: store.name,
-            taxId: store.taxId,
-            tel: store.tel,
-            route: store.route,
-            type: store.type,
-            typeName: store.typeName,
-            address: store.address,
-            district: store.district,
-            subDistrict: store.subDistrict,
-            province: store.province,
-            provinceCode: store.provinceCode,
-            postCode: store.postCode,
-            zone: store.zone,
-            area: store.area,
-            latitude: store.latitude,
-            longtitude: store.longtitude,
-            lineId: store.lineId,
-            note: store.note,
-            status: store.status,
-            approve: approve,
-            policyConsent: policyAgree,
-            imageList: images,
-            shippingAddress: shipping,
-        });
+            const similarStores = existingStores
+                .map((existingStore) => {
+                    let totalSimilarity = 0;
+                    fieldsToCheck.forEach((field) => {
+                        const similarity = calculateSimilarity(
+                            store[field]?.toString() || '',
+                            existingStore[field]?.toString() || ''
+                        );
+                        totalSimilarity += similarity;
+                    });
 
-        await storeData.save();
-        res.status(200).json({
-            status: '200',
-            message: 'Success'
-        })
-    } catch (error) {
-        console.error('Error saving log to MongoDB:', error)
-        res.status(500).json({ status: 'error', message: 'Server Error' })
-    }
+                    const averageSimilarity = totalSimilarity / fieldsToCheck.length;
+                    return {
+                        store: existingStore,
+                        similarity: averageSimilarity,
+                    };
+                })
+                .filter((result) => result.similarity > 50)
+                .sort((a, b) => b.similarity - a.similarity)
+                .slice(0, 3);
+
+            if (similarStores.length > 0) {
+                const sanitizedStores = similarStores.map((item) => ({
+                    store: Object.fromEntries(
+                        Object.entries(item.store._doc || item.store).filter(([key]) => key !== '_id')
+                    ),
+                    similarity: item.similarity.toFixed(2),
+                }));
+                return res.status(200).json({
+                    status: 'error',
+                    message: 'similar store',
+                    data: sanitizedStores,
+                });
+            }
+
+            const uploadedFiles = files
+                ? await uploadFiles(files, path.join(__dirname, '../public/images'), 'stores')
+                : []
+
+            const imageList = uploadedFiles.map((file, index) => ({
+                name: file.name,
+                path: file.path,
+                type: types[index] || 'unknown',
+            }));
+
+            const policyAgree = {
+                status: store.policyConsent?.status || '',
+            };
+            const approve = {
+                status: '19',
+            };
+
+            const shipping = {
+                default: '',
+                address: '',
+                district: '',
+                subDistrict: '',
+                province: '',
+                provinceCode: '',
+                postCode: '',
+                latitude: '',
+                longtitude: '',
+            }
+
+            const storeData = new Store({
+                storeId: '',
+                name: store.name,
+                taxId: store.taxId,
+                tel: store.tel,
+                route: store.route,
+                type: store.type,
+                typeName: store.typeName,
+                address: store.address,
+                district: store.district,
+                subDistrict: store.subDistrict,
+                province: store.province,
+                provinceCode: store.provinceCode,
+                postCode: store.postCode,
+                zone: store.zone,
+                area: store.area,
+                latitude: store.latitude,
+                longtitude: store.longtitude,
+                lineId: store.lineId,
+                note: store.note,
+                status: store.status,
+                approve: approve,
+                policyConsent: policyAgree,
+                imageList: imageList,
+                shippingAddress: shipping,
+            })
+
+            await storeData.save()
+            res.status(200).json({
+                status: 'success',
+                message: 'Store added successfully',
+            })
+        } catch (error) {
+            console.error('Error saving store to MongoDB:', error)
+            res.status(500).json({ status: 'error', message: 'Server Error' })
+        }
+    })
 }
 
 exports.editStore = async (req, res) => {
