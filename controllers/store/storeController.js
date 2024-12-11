@@ -186,7 +186,7 @@ exports.addStore = async (req, res, next) => {
 
             const files = req.files
             const store = JSON.parse(req.body.store)
-            const types = req.body.types ? req.body.types.split(',') : []            
+            const types = req.body.types ? req.body.types.split(',') : []
 
             if (!store.name || !store.address) {
                 return res.status(400).json({
@@ -245,12 +245,12 @@ exports.addStore = async (req, res, next) => {
             }
 
             const uploadedFiles = files
-                ? await uploadFiles(files, path.join(__dirname, '../public/images'), 'stores')
+                ? await uploadFiles(files, path.join(__dirname, '../public/images/stores'), store.area)
                 : []
 
             const imageList = uploadedFiles.map((file, index) => ({
                 name: file.name,
-                path: file.path,
+                path: file.fullPath,
                 type: types[index] || 'unknown',
             }));
 
@@ -261,17 +261,17 @@ exports.addStore = async (req, res, next) => {
                 status: '19',
             };
 
-            const shipping = {
-                default: '',
-                address: '',
-                district: '',
-                subDistrict: '',
-                province: '',
-                provinceCode: '',
-                postCode: '',
-                latitude: '',
-                longtitude: '',
-            }
+            const shippingAddress = Array.isArray(store.shippingAddress) ? store.shippingAddress : []
+            const shipping = shippingAddress.map((ship) => ({
+                default: ship.default || '',
+                address: ship.address || '',
+                district: ship.district || '',
+                subDistrict: ship.subDistrict || '',
+                provinceCode: ship.provinceCode || '',
+                postCode: ship.postCode || '',
+                latitude: ship.latitude || '',
+                longtitude: ship.longtitude || '',
+            }))
 
             const storeData = new Store({
                 storeId: '',

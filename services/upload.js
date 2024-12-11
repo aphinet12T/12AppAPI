@@ -3,11 +3,7 @@ const path = require('path')
 const multer = require('multer')
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage }).array('storeImages', 10)
-
-const timestamp = () => {
-    const date = new Date();
-    return `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`
-};
+const { timestamp } = require('../utilitys/utility')
 
 exports.uploadImage = async (req, res) => {
     try {

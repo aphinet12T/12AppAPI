@@ -18,13 +18,15 @@ const imageSchema = mongoose.Schema({
 })
 
 const shippingSchema = mongoose.Schema({
+    default: { type: String },
     address: { type: String },
     district: { type: String },
     subDistrict: { type: String },
     province: { type: String },
     provinceCode: { type: String },
     postCode: { type: String },
-    default: { type: String }
+    latitude: { type: String },
+    longtitude: { type: String },
 })
 
 const storeSchema = mongoose.Schema(

@@ -22,4 +22,9 @@ function calculateSimilarity(a, b) {
     return ((maxLength - distance) / maxLength) * 100;
 }
 
-module.exports = { calculateSimilarity };
+function timestamp () {
+    const date = new Date()
+    return `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`
+}
+
+module.exports = { calculateSimilarity, timestamp }
