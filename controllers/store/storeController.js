@@ -191,7 +191,7 @@ exports.addStore = async (req, res, next) => {
             if (!store.name || !store.address) {
                 return res.status(400).json({
                     status: 'error',
-                    message: 'Required fields are missing: name, taxId, address',
+                    message: 'Required fields are missing: name, address',
                 });
             }
 
@@ -245,7 +245,7 @@ exports.addStore = async (req, res, next) => {
             }
 
             const uploadedFiles = files
-                ? await uploadFiles(files, path.join(__dirname, '../public/images/stores'), store.area)
+                ? await uploadFiles(files, path.join(__dirname, '../../public/images/stores'), store.area, types)
                 : []
 
             const imageList = uploadedFiles.map((file, index) => ({

@@ -1,15 +1,15 @@
-const { timestamp } = require('./utility')
 const fs = require('fs')
 const path = require('path')
 const multer = require('multer')
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage }).array('storeImages', 10)
+const { timestamp } = require('./utility')
 
-const uploadFiles = async (files, basePath, subFolder = '') => {
+const uploadFiles = async (files, basePath, subFolder = '', name = '') => {
     const uploadedFiles = await Promise.all(
         files.map(async (file) => {
 
-            const imageName = `${Date.now()}-${timestamp()}${path.extname(file.originalname)}`
+            const imageName = `${Date.now()}-${timestamp()}-${name}${path.extname(file.originalname)}`
 
             const targetDir = path.join(basePath, subFolder)
             if (!fs.existsSync(targetDir)) {
