@@ -42,135 +42,6 @@ exports.getStore = async (req, res) => {
     }
 }
 
-// exports.addStore = async (req, res, next) => {
-//     const store = req.body;
-//     try {
-//         const existingStores = await Store.find({}, { _id: 0, __v: 0, idIndex: 0 });
-
-//         const fieldsToCheck = [
-//             'name',
-//             'taxId',
-//             'tel',
-//             'address',
-//             'district',
-//             'subDistrict',
-//             'province',
-//             'postCode',
-//             'latitude',
-//             'longtitude',
-//         ];
-
-//         const similarStores = existingStores
-//             .map((existingStore) => {
-//                 let totalSimilarity = 0;
-//                 fieldsToCheck.forEach((field) => {
-//                     const similarity = calculateSimilarity(
-//                         store[field]?.toString() || '',
-//                         existingStore[field]?.toString() || ''
-//                     );
-//                     totalSimilarity += similarity;
-//                 });
-
-//                 const averageSimilarity = totalSimilarity / fieldsToCheck.length;
-//                 return {
-//                     store: existingStore,
-//                     similarity: averageSimilarity,
-//                 };
-//             })
-//             .filter((result) => result.similarity > 50)
-//             .sort((a, b) => b.similarity - a.similarity)
-//             .slice(0, 3);
-
-//         const sanitizedStores = similarStores.map((item) => ({
-//             store: Object.fromEntries(
-//                 Object.entries(item.store._doc || item.store).filter(([key]) => key !== '_id')
-//             ),
-//             similarity: item.similarity.toFixed(2),
-//         }));
-
-//         // if (similarStores.length > 0) {
-//         //     return res.status(200).json({
-//         //         status: 'error',
-//         //         message: 'similar store',
-//         //         data: similarStores.map((item) => ({
-//         //             store: item.store,
-//         //             similarity: item.similarity.toFixed(2),
-//         //         })),
-//         //     })
-//         // }
-
-//         if (sanitizedStores.length > 0) {
-//             return res.status(200).json({
-//                 status: 'error',
-//                 message: 'similar store',
-//                 data: sanitizedStores,
-//             });
-//         }
-
-//         const policyAgree = {
-//             status: store.policyConsent.status,
-//         };
-//         const approve = {
-//             status: '19',
-//         };
-
-//         const imageList = Array.isArray(store.imageList) ? store.imageList : []
-//         const images = imageList.map((image) => ({
-//             name: image.name || '',
-//             path: image.path || '',
-//             type: image.type || '',
-//         }))
-
-//         const shipping = {
-//             default: '',
-//             address: '',
-//             district: '',
-//             subDistrict: '',
-//             province: '',
-//             provinceCode: '',
-//             postCode: '',
-//             latitude: '',
-//             longtitude: '',
-//         };
-
-//         const storeData = new Store({
-//             storeId: '',
-//             name: store.name,
-//             taxId: store.taxId,
-//             tel: store.tel,
-//             route: store.route,
-//             type: store.type,
-//             typeName: store.typeName,
-//             address: store.address,
-//             district: store.district,
-//             subDistrict: store.subDistrict,
-//             province: store.province,
-//             provinceCode: store.provinceCode,
-//             postCode: store.postCode,
-//             zone: store.zone,
-//             area: store.area,
-//             latitude: store.latitude,
-//             longtitude: store.longtitude,
-//             lineId: store.lineId,
-//             note: store.note,
-//             status: store.status,
-//             approve: approve,
-//             policyConsent: policyAgree,
-//             imageList: images,
-//             shippingAddress: shipping,
-//         });
-
-//         await storeData.save();
-//         res.status(200).json({
-//             status: '200',
-//             message: 'Success'
-//         })
-//     } catch (error) {
-//         console.error('Error saving log to MongoDB:', error)
-//         res.status(500).json({ status: 'error', message: 'Server Error' })
-//     }
-// }
-
 exports.addStore = async (req, res, next) => {
     upload(req, res, async (err) => {
         if (err) {
@@ -192,6 +63,13 @@ exports.addStore = async (req, res, next) => {
                 return res.status(400).json({
                     status: 'error',
                     message: 'Required fields are missing: name, address',
+                });
+            }
+
+            if (files.length !== types.length) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Number of files and types do not match',
                 });
             }
 
@@ -244,15 +122,32 @@ exports.addStore = async (req, res, next) => {
                 });
             }
 
-            const uploadedFiles = files
-                ? await uploadFiles(files, path.join(__dirname, '../../public/images/stores'), store.area, types)
-                : []
+            // const uploadedFiles = files
+            //     ? await uploadFiles(files, path.join(__dirname, '../../public/images/stores'), store.area, types)
+            //     : []
 
-            const imageList = uploadedFiles.map((file, index) => ({
-                name: file.name,
-                path: file.fullPath,
-                type: types[index] || 'unknown',
-            }));
+            // const imageList = uploadedFiles.map((file, index) => ({
+            //     name: file.name,
+            //     path: file.fullPath,
+            //     type: types[index] || 'unknown',
+            // }));
+
+            const uploadedFiles = [];
+            for (let i = 0; i < files.length; i++) {
+                const uploadedFile = await uploadFiles(
+                    [files[i]],
+                    path.join(__dirname, '../../public/images/stores'),
+                    store.area,
+                    types[i]
+                );
+                uploadedFiles.push({
+                    name: uploadedFile[0].name,
+                    path: uploadedFile[0].fullPath,
+                    type: types[i],
+                });
+            }
+
+            const imageList = uploadedFiles;
 
             const policyAgree = {
                 status: store.policyConsent?.status || '',
