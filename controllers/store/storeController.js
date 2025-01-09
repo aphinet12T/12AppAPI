@@ -1,7 +1,7 @@
 const { Store } = require('../../models/cash/store')
 const { uploadFiles } = require('../../utilitys/upload')
 const { calculateSimilarity } = require('../../utilitys/utility')
-const _ = require('lodash')
+// const _ = require('lodash')
 const multer = require('multer')
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage }).array('storeImages', 3)
@@ -246,6 +246,75 @@ exports.editStore = async (req, res) => {
     }
 }
 
+exports.addFromERP = async (req, res) => {
+    try {
+        const dataArray = []
+        const response = await axios.post('http://58.181.206.159:9814/cms_api/cms_customer2.php')
+        for (const splitData of response.data) {
+            const approveData = {
+                dateSend: new Date(),
+                dateAction: new Date(),
+                appPerson: "system"
+            }
+            const poliAgree = {
+                status: 'Agree',
+                date: new Date()
+            }
+            const mainData = {
+                "storeId": splitData.storeId,
+                "taxId": splitData.taxId,
+                "name": splitData.name,
+                "tel": splitData.tel,
+                "route": splitData.route,
+                "type": splitData.type,
+                "typeName": splitData.typeName,
+                "address": splitData.address,
+                "district": splitData.district,
+                "subDistrict": splitData.subDistrict,
+                "province": splitData.province,
+                "provinceCode": splitData.provinceCode,
+                "postCode ": splitData.postCode,
+                "zone": splitData.zone,
+                "area": splitData.area,
+                "latitude": splitData.latitude,
+                "longtitude": splitData.longtitude,
+                "lineId": '',
+                "note ": "",
+                approve: approveData,
+                status: '20',
+                policyConsent: poliAgree,
+                "imageList": [],
+                "shippingAddress": [],
+                "checkIn": {},
+                createdDate: Date(),
+                updatedDate: Date()
+            }
+            const StoreIf = await Store.findOne({ storeId: splitData.storeId })
+            if (!StoreIf) {
+                await Store.create(mainData)
+            } else {
+                const idStoreReplace = {
+                    idStore: splitData.storeId,
+                    name: splitData.name
+                }
+                dataArray.push(idStoreReplace)
+            }
+        }
+        res.status(200).json({
+            status: 201,
+            message: 'Store Added Succesfully',
+            data: dataArray
+        })
+
+    } catch (error) {
+        console.error('Error saving store to MongoDB:', error)
+        res.status(500).json({
+            status: 'error',
+            message: 'Server Error'
+        })
+    }
+}
+
 exports.checkInStore = async (req, res) => {
     const { storeId } = req.params
     const { latitude, longtitude } = req.body
@@ -256,7 +325,7 @@ exports.checkInStore = async (req, res) => {
         // const store = await Store.findOne({storeId})
 
         if (!latitude || !longtitude) {
-            return res.status(200).json({ status: 404, message: 'latitude and longtitude are required!' })
+            return res.status(400).json({ status: 400, message: 'latitude and longtitude are required!' })
         }
 
         const result = await Store.findOneAndUpdate(
@@ -265,7 +334,7 @@ exports.checkInStore = async (req, res) => {
                 $set: {
                     "checkIn.latitude": latitude,
                     "checkIn.longtitude": longtitude,
-                    "checkIn.updateDate": Date()
+                    "checkIn.updateDate": new Date()
                 }
             },
             {
@@ -278,9 +347,9 @@ exports.checkInStore = async (req, res) => {
             return res.status(200).json({ status: 404, message: 'store not found!' })
         }
 
-        res.status(200).json({ 
-            status: 201, 
-            message: 'Checked In Successfully', 
+        res.status(200).json({
+            status: 201,
+            message: 'Checked In Successfully',
             data: result
         })
     } catch (error) {

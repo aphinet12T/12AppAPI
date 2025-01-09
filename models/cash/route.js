@@ -1,5 +1,21 @@
 const mongoose = require('mongoose')
 
+
+const StoreInfoSchema = new mongoose.Schema({
+    storeId: { type: String, required: true },
+    // storeName: { type: String, default: '' },
+    // storeAddress: { type: String, default: '' },
+    // storeType: { type: String, default: '' },
+})
+
+const ListOrderSchema = new mongoose.Schema({
+    number: { type: Number, required: true },
+    orderId: { type: String, required: true },
+    status: { type: String, default: '' },
+    statusText: { type: String, default: '' },
+    date: { type: Date, required: true },
+})
+
 const ListStoreSchema = new mongoose.Schema({
     storeInfo: StoreInfoSchema,
     latitude: { type: String, required: true },
@@ -11,20 +27,6 @@ const ListStoreSchema = new mongoose.Schema({
     listOrder: [ListOrderSchema]
 })
 
-const StoreInfoSchema = new mongoose.Schema({
-    storeId: { type: String, required: true },
-    storeName: { type: String, default: '' },
-    storeAddress: { type: String, default: '' },
-    storeType: { type: String, default: '' },
-})
-
-const ListOrderSchema = new mongoose.Schema({
-    number: { type: Number, required: true },
-    orderId: { type: String, required: true },
-    status: { type: String, default: '' },
-    statusText: { type: String, default: '' },
-    date: { type: Date, required: true },
-})
 
 const RouteSchema = new mongoose.Schema({
     id: { type: String, required: true, index: true },
