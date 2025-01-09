@@ -154,7 +154,7 @@ exports.addStore = async (req, res, next) => {
             };
             const approve = {
                 status: '19',
-            };
+            }
 
             const shippingAddress = Array.isArray(store.shippingAddress) ? store.shippingAddress : []
             const shipping = shippingAddress.map((ship) => ({
@@ -167,6 +167,8 @@ exports.addStore = async (req, res, next) => {
                 latitude: ship.latitude || '',
                 longtitude: ship.longtitude || '',
             }))
+
+            const checkIn = {}
 
             const storeData = new Store({
                 storeId: '',
@@ -193,6 +195,7 @@ exports.addStore = async (req, res, next) => {
                 policyConsent: policyAgree,
                 imageList: imageList,
                 shippingAddress: shipping,
+                checkIn: checkIn,
             })
 
             await storeData.save()
@@ -236,6 +239,49 @@ exports.editStore = async (req, res) => {
         res.status(200).json({
             message: 'Store updated successfully',
             data: store,
+        })
+    } catch (error) {
+        console.error('Error updating store:', error)
+        res.status(500).json({ message: 'Server error' })
+    }
+}
+
+exports.checkInStore = async (req, res) => {
+    const { storeId } = req.params
+    const { latitude, longtitude } = req.body
+
+    try {
+        console.log('store', storeId)
+        console.log('data', latitude, longtitude)
+        // const store = await Store.findOne({storeId})
+
+        if (!latitude || !longtitude) {
+            return res.status(200).json({ status: 404, message: 'latitude and longtitude are required!' })
+        }
+
+        const result = await Store.findOneAndUpdate(
+            { storeId },
+            {
+                $set: {
+                    "checkIn.latitude": latitude,
+                    "checkIn.longtitude": longtitude,
+                    "checkIn.updateDate": Date()
+                }
+            },
+            {
+                // new: true,
+                // upsert: true
+            }
+        )
+
+        if (!result) {
+            return res.status(200).json({ status: 404, message: 'store not found!' })
+        }
+
+        res.status(200).json({ 
+            status: 201, 
+            message: 'Checked In Successfully', 
+            data: result
         })
     } catch (error) {
         console.error('Error updating store:', error)

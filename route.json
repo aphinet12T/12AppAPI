@@ -1,0 +1,335 @@
+[
+    {
+        "id": "BE811R01",
+        "area": "BE811",
+        "period": "202408",
+        "day": "01",
+        "storeAll": 20,
+        "storeBuy": 10,
+        "storeNotBuy": 5,
+        "storeCheckin": 3,
+        "storeTotal": 10,
+        "listStore": [
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "",
+                "longtitude": "",
+                "note": "",
+                "status": "2",
+                "statusText": "",
+                "date": "2024-08-08T10:02:15",
+                "listOrder": [
+                    {
+                        "number": 1,
+                        "orderId": "42",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-08T10:02:15"
+                    },
+                    {
+                        "number": 2,
+                        "orderId": "251",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-19T09:07:14"
+                    }
+                ]
+            },
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "",
+                "longtitude": "",
+                "note": "",
+                "status": "2",
+                "statusText": "",
+                "date": "2024-08-08T09:43:36",
+                "listOrder": [
+                    {
+                        "number": 1,
+                        "orderId": "41",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-08T09:43:36"
+                    },
+                    {
+                        "number": 2,
+                        "orderId": "253",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-19T09:15:35"
+                    }
+                ]
+            },
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "13.806681",
+                "longtitude": "100.5320336",
+                "note": "สินค้าระบายไม่ดี",
+                "status": "1",
+                "statusText": "",
+                "date": "2024-08-15T13:02:47",
+                "listOrder": []
+            },
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "",
+                "longtitude": "",
+                "note": "",
+                "status": "2",
+                "statusText": "",
+                "date": "2024-08-15T12:58:31",
+                "listOrder": [
+                    {
+                        "number": 1,
+                        "orderId": "191",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-15T12:58:31"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "BE811R01",
+        "area": "BE811",
+        "period": "202408",
+        "day": "02",
+        "storeAll": 20,
+        "storeBuy": 10,
+        "storeNotBuy": 5,
+        "storeCheckin": 3,
+        "storeTotal": 20,
+        "listStore": [
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "",
+                "longtitude": "",
+                "note": "",
+                "status": "2",
+                "statusText": "",
+                "date": "2024-08-08T10:02:15",
+                "listOrder": [
+                    {
+                        "number": 1,
+                        "orderId": "42",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-08T10:02:15"
+                    },
+                    {
+                        "number": 2,
+                        "orderId": "251",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-19T09:07:14"
+                    }
+                ]
+            },
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "",
+                "longtitude": "",
+                "note": "",
+                "status": "2",
+                "statusText": "",
+                "date": "2024-08-08T09:43:36",
+                "listOrder": [
+                    {
+                        "number": 1,
+                        "orderId": "41",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-08T09:43:36"
+                    },
+                    {
+                        "number": 2,
+                        "orderId": "253",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-19T09:15:35"
+                    }
+                ]
+            },
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "13.806681",
+                "longtitude": "100.5320336",
+                "note": "สินค้าระบายไม่ดี",
+                "status": "1",
+                "statusText": "",
+                "date": "2024-08-15T13:02:47",
+                "listOrder": []
+            },
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "",
+                "longtitude": "",
+                "note": "",
+                "status": "2",
+                "statusText": "",
+                "date": "2024-08-15T12:58:31",
+                "listOrder": [
+                    {
+                        "number": 1,
+                        "orderId": "191",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-15T12:58:31"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "BE811R01",
+        "area": "BE811",
+        "period": "202408",
+        "day": "03",
+        "storeAll": 20,
+        "storeBuy": 10,
+        "storeNotBuy": 5,
+        "storeCheckin": 3,
+        "storeTotal": 0,
+        "listStore": [
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "",
+                "longtitude": "",
+                "note": "",
+                "status": "2",
+                "statusText": "",
+                "date": "2024-08-08T10:02:15",
+                "listOrder": [
+                    {
+                        "number": 1,
+                        "orderId": "42",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-08T10:02:15"
+                    },
+                    {
+                        "number": 2,
+                        "orderId": "251",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-19T09:07:14"
+                    }
+                ]
+            },
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "",
+                "longtitude": "",
+                "note": "",
+                "status": "2",
+                "statusText": "",
+                "date": "2024-08-08T09:43:36",
+                "listOrder": [
+                    {
+                        "number": 1,
+                        "orderId": "41",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-08T09:43:36"
+                    },
+                    {
+                        "number": 2,
+                        "orderId": "253",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-19T09:15:35"
+                    }
+                ]
+            },
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "13.806681",
+                "longtitude": "100.5320336",
+                "note": "สินค้าระบายไม่ดี",
+                "status": "1",
+                "statusText": "",
+                "date": "2024-08-15T13:02:47",
+                "listOrder": []
+            },
+            {
+                "storeInfo": {
+                    "storeId": "V10800002",
+                    "storeName": "",
+                    "storeAddress": "",
+                    "storeType": ""
+                },
+                "latitude": "",
+                "longtitude": "",
+                "note": "",
+                "status": "2",
+                "statusText": "",
+                "date": "2024-08-15T12:58:31",
+                "listOrder": [
+                    {
+                        "number": 1,
+                        "orderId": "191",
+                        "status": "",
+                        "statusText": "",
+                        "date": "2024-08-15T12:58:31"
+                    }
+                ]
+            }
+        ]
+    }
+]
