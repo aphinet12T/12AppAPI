@@ -10,23 +10,27 @@ const path = require('path')
 
 exports.getStore = async (req, res) => {
     try {
-        const { area, type } = req.query
+        const { area, type, route } = req.query
 
         const currentDate = new Date()
         const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
         const NextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
 
-        let query = { area }
+        let query = { area, route }
 
         if (type === 'new') {
             query.createdDate = {
                 $gte: startMonth,
                 $lt: NextMonth,
-            };
-        } else {
-            query.area
+            }
+        } else if (type === 'all') {
+            query.createdDate = {
+                $not: {
+                    $gte: startMonth,
+                    $lt: NextMonth,
+                }
+            }
         }
-
         const data = await Store.find(query, { _id: 0, __v: 0 })
 
         if (data.length === 0) {
@@ -230,7 +234,6 @@ exports.editStore = async (req, res) => {
             return res.status(400).json({ message: 'No valid fields to update' })
         }
 
-        // const store = await Store.findByIdAndUpdate(id, data, { new: true })
         const store = await Store.findOneAndUpdate({ storeId }, data, { new: true })
 
         if (!store) {
@@ -287,7 +290,7 @@ exports.addFromERP = async (req, res) => {
                 'imageList': [],
                 'shippingAddress': [],
                 'checkIn': {},
-                createdDate: Date(),
+                createdDate: splitData.createdDate,
                 updatedDate: Date()
             }
             const StoreIf = await Store.findOne({ storeId: splitData.storeId })
