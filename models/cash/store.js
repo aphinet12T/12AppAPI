@@ -25,13 +25,13 @@ const shippingSchema = mongoose.Schema({
     province: { type: String },
     provinceCode: { type: String },
     postCode: { type: String },
-    latitude: { type: Number },
-    longtitude: { type: Number },
+    latitude: { type: String },
+    longtitude: { type: String },
 });
 
 const checkinSchema = mongoose.Schema({
-    latitude: { type: Number, default: 0.00 },
-    longtitude: { type: Number, default: 0.00 },
+    latitude: { type: String, default: '0.00' },
+    longtitude: { type: String, default: '0.00' },
     updateDate: { type: Date, default: Date.now },
 });
 
@@ -44,15 +44,15 @@ const storeSchema = mongoose.Schema({
     type: { type: String, require: true },
     typeName: { type: String, require: true },
     address: { type: String, require: true },
-    district: { type: String, require: true },
     subDistrict: { type: String, require: true },
+    district: { type: String, require: true },
     province: { type: String, require: true },
     provinceCode: { type: String, require: true },
     postCode: { type: String, require: true },
     zone: { type: String, require: true },
     area: { type: String, require: true },
-    latitude: { type: Number, require: true },
-    longtitude: { type: Number, require: true },
+    latitude: { type: String, require: true },
+    longtitude: { type: String, require: true },
     lineId: { type: String },
     note: { type: String },
     status: { type: String },
