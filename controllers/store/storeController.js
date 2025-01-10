@@ -1,6 +1,7 @@
 const { Store } = require('../../models/cash/store')
 const { uploadFiles } = require('../../utilitys/upload')
 const { calculateSimilarity } = require('../../utilitys/utility')
+const axios = require('axios')
 // const _ = require('lodash')
 const multer = require('multer')
 const storage = multer.memoryStorage()
@@ -249,43 +250,43 @@ exports.editStore = async (req, res) => {
 exports.addFromERP = async (req, res) => {
     try {
         const dataArray = []
-        const response = await axios.post('http://58.181.206.159:9814/cms_api/cms_customer2.php')
+        const response = await axios.post('http://58.181.206.159:9814/ca_api/ca_customer.php')
         for (const splitData of response.data) {
             const approveData = {
                 dateSend: new Date(),
                 dateAction: new Date(),
-                appPerson: "system"
+                appPerson: 'system'
             }
             const poliAgree = {
                 status: 'Agree',
                 date: new Date()
             }
             const mainData = {
-                "storeId": splitData.storeId,
-                "taxId": splitData.taxId,
-                "name": splitData.name,
-                "tel": splitData.tel,
-                "route": splitData.route,
-                "type": splitData.type,
-                "typeName": splitData.typeName,
-                "address": splitData.address,
-                "district": splitData.district,
-                "subDistrict": splitData.subDistrict,
-                "province": splitData.province,
-                "provinceCode": splitData.provinceCode,
-                "postCode ": splitData.postCode,
-                "zone": splitData.zone,
-                "area": splitData.area,
-                "latitude": splitData.latitude,
-                "longtitude": splitData.longtitude,
-                "lineId": '',
-                "note ": "",
+                'storeId': splitData.storeId,
+                'taxId': splitData.taxId,
+                'name': splitData.name,
+                'tel': splitData.tel,
+                'route': splitData.route,
+                'type': splitData.type,
+                'typeName': splitData.typeName,
+                'address': splitData.address,
+                'district': splitData.district,
+                'subDistrict': splitData.subDistrict,
+                'province': splitData.province,
+                'provinceCode': splitData.provinceCode,
+                'postCode ': splitData.postCode,
+                'zone': splitData.zone,
+                'area': splitData.area,
+                'latitude': splitData.latitude,
+                'longtitude': splitData.longtitude,
+                'lineId': '',
+                'note ': '',
                 approve: approveData,
                 status: '20',
                 policyConsent: poliAgree,
-                "imageList": [],
-                "shippingAddress": [],
-                "checkIn": {},
+                'imageList': [],
+                'shippingAddress': [],
+                'checkIn': {},
                 createdDate: Date(),
                 updatedDate: Date()
             }
@@ -322,7 +323,6 @@ exports.checkInStore = async (req, res) => {
     try {
         console.log('store', storeId)
         console.log('data', latitude, longtitude)
-        // const store = await Store.findOne({storeId})
 
         if (!latitude || !longtitude) {
             return res.status(400).json({ status: 400, message: 'latitude and longtitude are required!' })
@@ -332,25 +332,25 @@ exports.checkInStore = async (req, res) => {
             { storeId },
             {
                 $set: {
-                    "checkIn.latitude": latitude,
-                    "checkIn.longtitude": longtitude,
-                    "checkIn.updateDate": new Date()
+                    'checkIn.latitude': latitude,
+                    'checkIn.longtitude': longtitude,
+                    'checkIn.updateDate': new Date()
                 }
-            },
-            {
-                // new: true,
-                // upsert: true
             }
         )
 
         if (!result) {
-            return res.status(200).json({ status: 404, message: 'store not found!' })
+            return res.status(404).json({ status: 404, message: 'store not found!' })
         }
 
         res.status(200).json({
             status: 201,
             message: 'Checked In Successfully',
-            data: result
+            data: {
+                latitude: result.checkIn.latitude,
+                longtitude: result.checkIn.latitude,
+                updateDate: result.checkIn.updateDate
+            }
         })
     } catch (error) {
         console.error('Error updating store:', error)
