@@ -16,7 +16,7 @@ exports.getStore = async (req, res) => {
         const startMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
         const NextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
 
-        let query = { area, route }
+        let query = { area }
 
         if (type === 'new') {
             query.createdDate = {
@@ -30,6 +30,10 @@ exports.getStore = async (req, res) => {
                     $lt: NextMonth,
                 }
             }
+        }
+
+        if(route) {
+            query.route = route
         }
         const data = await Store.find(query, { _id: 0, __v: 0 })
 
