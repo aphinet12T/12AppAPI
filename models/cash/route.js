@@ -1,19 +1,19 @@
 const mongoose = require('mongoose')
 
 const ListOrderSchema = new mongoose.Schema({
-    number: { type: Number, required: true },
-    orderId: { type: String, required: true },
-    status: { type: String, default: '' },
+    number: { type: Number },
+    orderId: { type: String },
+    status: { type: String, default: '0' },
     statusText: { type: String, default: '' },
-    date: { type: Date, required: true },
+    date: { type: Date },
 })
 
 const ListStoreSchema = new mongoose.Schema({
     storeInfo: { type: String, ref: 'Store', required: true },
-    latitude: { type: String, required: true, default: '0.00' },
-    longtitude: { type: String, required: true, default: '0.00' },
+    latitude: { type: String, default: '0.00' },
+    longtitude: { type: String, default: '0.00' },
     note: { type: String, default: '' },
-    status: { type: String, default: '1' },
+    status: { type: String, default: '0' },
     statusText: { type: String, default: '' },
     date: { type: Date, default: Date.now },
     listOrder: [ListOrderSchema]
@@ -39,8 +39,8 @@ RouteSchema.virtual('storeNotBuy').get(function () {
 RouteSchema.virtual('storeCheckin').get(function () {
     return this.listStore.filter((store) => store.status === '1').length
 })
-RouteSchema.set('toJSON', { virtuals: true });
-RouteSchema.set('toObject', { virtuals: true });
+RouteSchema.set('toJSON', { virtuals: false })
+RouteSchema.set('toObject', { virtuals: false })
 
 const Route = mongoose.model('Route', RouteSchema)
 

@@ -3,7 +3,7 @@ const path = require('path')
 const multer = require('multer')
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage }).array('storeImages', 10)
-const { timestamp } = require('../utilitys/utility')
+const { timestamp } = require('../utilitys/datetime')
 
 exports.uploadImage = async (req, res) => {
     try {

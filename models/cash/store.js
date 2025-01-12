@@ -36,7 +36,7 @@ const checkinSchema = mongoose.Schema({
 });
 
 const storeSchema = mongoose.Schema({
-    storeId: { type: String, require: true },
+    storeId: { type: String, require: true, unique: true },
     name: { type: String, require: true },
     taxId: { type: String },
     tel: { type: String, require: true },

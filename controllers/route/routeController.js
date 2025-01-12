@@ -1,12 +1,99 @@
+const { query } = require('express')
 const { Route } = require('../../models/cash/route')
+const { period } = require('../../utilitys/datetime')
+const axios = require('axios')
+
+// exports.getRoute = async (req, res) => {
+//     try {
+//         const { area, period } = req.query
+
+//         if (!area || !period) {
+//             return res.status(400).json({ status: 400, message: 'area and period are required!' })
+//         }
+
+//         let query = { area, period }
+//         const response = await Route.find(query, { _id: 0, __v: 0 })
+//             .populate('listStore.storeInfo', 'storeId storeName storeAddress storeType')
+//             .lean()
+//         res.status(200).json({
+//             status: '200',
+//             message: 'Success',
+//             data: response,
+//         });
+//     } catch (error) {
+//         console.error(error)
+//         res.status(500).json({ status: '501', message: error.message })
+//     }
+// }
 
 exports.getRoute = async (req, res) => {
     try {
+        const { area, period } = req.query
+
+        if (!area || !period) {
+            return res.status(400).json({ status: 400, message: 'area and period are required!' })
+        }
+
+        const route = await Route.aggregate([
+            { $match: { area, period } },
+            { $unwind: '$listStore' },
+            {
+                $lookup: {
+                    from: 'stores',
+                    localField: 'listStore.storeInfo',
+                    foreignField: 'storeId',
+                    as: 'storeDetails',
+                }
+            },
+            { $unwind: { path: '$storeDetails', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    period: 1,
+                    area: 1,
+                    day: 1,
+                    'listStore.storeInfo': {
+                        storeId: '$storeDetails.storeId',
+                        storeName: '$storeDetails.name',
+                        storeAddress: '$storeDetails.address',
+                        storeType: '$storeDetails.typeName',
+                    },
+                    'listStore.latitude': 1,
+                    'listStore.longtitude': 1,
+                    'listStore.note': 1,
+                    'listStore.status': 1,
+                    'listStore.statusText': 1,
+                    'listStore.date': 1,
+                    'listStore.listOrder': 1,
+                }
+            },
+            {
+                $group: {
+                    _id: '$id',
+                    id: { $first: '$id' },
+                    period: { $first: '$period' },
+                    area: { $first: '$area' },
+                    day: { $first: '$day' },
+                    listStore: { $push: '$listStore' },
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    period: 1,
+                    area: 1,
+                    day: 1,
+                    listStore: 1,
+                },
+            },
+        ])
 
         res.status(200).json({
             status: '200',
             message: 'Success',
-            data: 'data',
+            data: route,
         });
     } catch (error) {
         console.error(error)
@@ -17,60 +104,69 @@ exports.getRoute = async (req, res) => {
 exports.addFromERP = async (req, res) => {
     try {
         const response = await axios.post('http://58.181.206.159:9814/ca_api/ca_route.php')
-        const idRu = await Route.findOne({ period: currentdateFormatYearMont() }).sort({ id: -1 })
+        if (!response.data || !Array.isArray(response.data)) {
+            return res.status(400).json({
+                status: 400,
+                message: 'Invalid response data from external API'
+            })
+        }
 
-        let routeId;
-        if (!idRu) {
-            routeId = currentdateFormatYearMont() + 'R1'
+        const allRoutes = await Route.find({ period: period() })
+        const routeMap = new Map(allRoutes.map(route => [route.id, route]))
+
+        let routeId
+        const latestRoute = allRoutes.sort((a, b) => b.id.localeCompare(a.id))[0]
+        if (!latestRoute) {
+            routeId = `${period()}R01`
         } else {
-            const prefix = idRu.id.slice(0, 7)
-            const subfix = parseInt(idRu.id.slice(7)) + 1
-            routeId = prefix + subfix
+            const prefix = latestRoute.id.slice(0, 6)
+            const subfix = (parseInt(latestRoute.id.slice(7)) + 1).toString().padStart(2, '0')
+            routeId = prefix + subfix;
         }
 
         for (const storeList of response.data) {
-            const existingRoute = await Route.findOne({ id: storeList.id, period: currentdateFormatYearMont() })
-
-            if (existingRoute) {
-                for (const listSub of storeList.list) {
-                    const storeExists = existingRoute.list.some(store => store.storeId === listSub)
-                    if (!storeExists) {
-                        const newData = {
-                            storeId: listSub,
-                            latitude: '',
-                            longtitude: '',
-                            status: 0,
-                            note: '',
-                            dateCheck: '',
-                            listCheck: []
+            try {
+                const existingRoute = routeMap.get(storeList.id)
+                if (existingRoute) {
+                    for (const list of storeList.storeInfo || []) {
+                        const storeExists = existingRoute.list.some(store => store.storeInfo === list)
+                        if (!storeExists) {
+                            const newData = {
+                                storeInfo: list,
+                                latitude: '',
+                                longtitude: '',
+                                status: 0,
+                                note: '',
+                                date: '',
+                                listOrder: []
+                            }
+                            existingRoute.list.push(newData)
                         }
-                        existingRoute.list.push(newData)
                     }
+                    await existingRoute.save()
+                } else {
+                    const listStore = [...(storeList.listStore || [])]
+                    const data = {
+                        id: storeList.id,
+                        area: storeList.area,
+                        period: period(),
+                        day: storeList.day,
+                        listStore
+                    };
+                    await Route.create(data)
                 }
-                await existingRoute.save()
-            } else {
-                const listStore = []
-                for (const listSub of storeList.list) {
-                    const newData = {
-                        storeInfo: listSub,
-                    }
-                    listStore.push(newData)
-                }
-                const mainData = {
-                    id: storeList.id,
-                    area: storeList.area,
-                    period: currentdateFormatYearMont(),
-                    day: storeList.day,
-                    list: listStore
-                }
-                await Route.create(mainData)
+            } catch (err) {
+                console.error(`Error processing storeList with id ${storeList.id}:`, err.message)
+                continue
             }
         }
 
-        await createLog('200', req.method, req.originalUrl, res.body, 'Add Route Successfully')
-        res.status(200).json({ status: 201, message: 'Add Route Successfully' })
+        res.status(200).json({
+            status: 201,
+            message: 'Add Route Successfully'
+        });
     } catch (e) {
-        await createLog('500', req.method, req.originalUrl, res.body, e.message)
+        console.error('Error in addFromERP:', e.message)
         res.status(500).json({
             status: 500,
             message: e.message
