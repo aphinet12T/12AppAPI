@@ -130,16 +130,6 @@ exports.addStore = async (req, res, next) => {
                 });
             }
 
-            // const uploadedFiles = files
-            //     ? await uploadFiles(files, path.join(__dirname, '../../public/images/stores'), store.area, types)
-            //     : []
-
-            // const imageList = uploadedFiles.map((file, index) => ({
-            //     name: file.name,
-            //     path: file.fullPath,
-            //     type: types[index] || 'unknown',
-            // }));
-
             const uploadedFiles = [];
             for (let i = 0; i < files.length; i++) {
                 const uploadedFile = await uploadFiles(

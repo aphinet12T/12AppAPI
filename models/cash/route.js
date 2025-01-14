@@ -39,8 +39,8 @@ RouteSchema.virtual('storeNotBuy').get(function () {
 RouteSchema.virtual('storeCheckin').get(function () {
     return this.listStore.filter((store) => store.status === '1').length
 })
-RouteSchema.set('toJSON', { virtuals: false })
-RouteSchema.set('toObject', { virtuals: false })
+RouteSchema.set('toJSON', { virtuals: true })
+RouteSchema.set('toObject', { virtuals: true })
 
 const Route = mongoose.model('Route', RouteSchema)
 
