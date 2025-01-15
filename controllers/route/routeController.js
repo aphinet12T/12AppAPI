@@ -15,7 +15,6 @@ exports.getRoute = async (req, res) => {
         let query = { area, period }
         const response = await Route.find(query, { _id: 0, __v: 0 })
             .populate('listStore.storeInfo', 'storeId name address typeName')
-            .lean()
         res.status(200).json({
             status: '200',
             message: 'Success',
