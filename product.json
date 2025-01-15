@@ -1,0 +1,38 @@
+[
+    {
+        "id": "10010101018",
+        "name": "ผงปรุงรสหมู ฟ้าไทย 1200g x6",
+        "group": "ผงปรุงรส",
+        "brand": "ฟ้าไทย",
+        "size": "1.2 KG",
+        "flavour": "หมู",
+        "type": "ไม่แถม",
+        "weightGross":"",
+        "weightNet":"",
+        "statusSale": "Y",
+        "statusRefund": "Y",
+        "statusWithdraw": "Y",
+        "status": "1",
+        "image": "",
+        "listUnit": [
+            {
+                "id": "1",
+                "name": "CTN",
+                "factor": 6,
+                "price": {
+                    "sale": 654,
+                    "refund": 654
+                }
+            },
+            {
+                "id": "2",
+                "name": "PCS",
+                "factor": 1,
+                "price": {
+                    "sale": 109,
+                    "refund": 109
+                }
+            }
+        ]
+    }
+]

@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
 
-const convertSchema = mongoose.Schema({
-    factor: { type: String },
-    description: { type: String },
+const price = mongoose.Schema({
+    sale: { type: String },
+    priceRefund: { type: String },
 })
 
-const unitListSchema = mongoose.Schema({
+const listUnit = mongoose.Schema({
     id: { type: String },
     unitName: { type: String },
     priceSale: { type: String },
@@ -28,11 +28,11 @@ const productSchema = mongoose.Schema(
         statusRefund: { type: String, require: true },
         grossWeight: { type: String, require: true },
         netWeight: { type: String, require: true },
-        unitList: [unitListSchema],
+        unitList: [listUnit],
         createdDate: { type: Date, default: Date.now },
         updatedDate: { type: Date, default: Date.now },
     })
 
-const Store = mongoose.model('Store', storeSchema)
+const Product = mongoose.model('Product', productSchema)
 
-module.exports = { Store, TypeStore }
+module.exports = { Product }

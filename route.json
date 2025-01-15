@@ -9,6 +9,7 @@
         "storeNotBuy": 5,
         "storeCheckin": 3,
         "storeTotal": 10,
+        "status": "",
         "listStore": [
             {
                 "storeInfo": {
