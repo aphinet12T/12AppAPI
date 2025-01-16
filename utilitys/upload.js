@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const multer = require('multer')
 const storage = multer.memoryStorage()
-const upload = multer({ storage: storage }).array('storeImages', 10)
+// const upload = multer({ storage: storage }).array('storeImages', 10)
 const { timestamp } = require('./datetime')
 
 const uploadFiles = async (files, basePath, subFolder = '', name = '') => {

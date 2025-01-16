@@ -1,9 +1,10 @@
 const express = require('express')
-const { getRoute, addFromERP } = require('../../controllers/route/routeController')
+const { getRoute, addFromERP, checkIn } = require('../../controllers/route/routeController')
 
 const router = express.Router()
 
 router.get('/getRoute', getRoute)
+router.post('/checkIn', checkIn)
 router.post('/addFromERP', addFromERP)
 
 module.exports = router

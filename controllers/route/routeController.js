@@ -1,8 +1,13 @@
 const { query } = require('express')
+const axios = require('axios')
 const { Route } = require('../../models/cash/route')
 const { period } = require('../../utilitys/datetime')
-const axios = require('axios')
 const { Store } = require('../../models/cash/store')
+const { uploadFiles } = require('../../utilitys/upload')
+const multer = require('multer')
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage }).array('checkInImage',1)
+const path = require('path')
 
 exports.getRoute = async (req, res) => {
     try {
@@ -18,7 +23,7 @@ exports.getRoute = async (req, res) => {
             const query = { area, period }
             response = await Route.find(query, { _id: 0, __v: 0 })
                 .populate('listStore.storeInfo', 'storeId name address typeName')
-        } 
+        }
         else if (storeId) {
             const store = await Store.findOne({ storeId })
             if (!store) {
@@ -32,7 +37,7 @@ exports.getRoute = async (req, res) => {
                 ...route.toObject(),
                 listStore: route.listStore.filter(store => store.storeInfo && store.storeInfo.storeId === storeId),
             }))
-        } 
+        }
         else {
             return res.status(400).json({ status: 400, message: 'area or storeId is required!' })
         }
@@ -136,13 +141,13 @@ exports.addFromERP = async (req, res) => {
 
         const allRoutes = await Route.find({ period: period() })
         const routeMap = new Map(allRoutes.map((route) => [route.id, route]))
-        console.log('allRoute',allRoutes)
+        console.log('allRoute', allRoutes)
         let routeId
         const latestRoute = allRoutes.sort((a, b) => b.id.localeCompare(a.id))[0]
         if (!latestRoute) {
             routeId = `${period()}${response.data.area}R01`
-            console.log('route',routeId)
-            console.log('period',period())
+            console.log('route', routeId)
+            console.log('period', period())
         } else {
             const prefix = latestRoute.id.slice(0, 6)
             const subfix = (parseInt(latestRoute.id.slice(7)) + 1).toString().padStart(2, '0')
@@ -164,13 +169,15 @@ exports.addFromERP = async (req, res) => {
                         const storeExists = existingRoute.listStore.some((store) => store.storeInfo.toString() === store._id.toString())
                         if (!storeExists) {
                             const newData = {
-                                storeInfo: store._id, 
+                                storeInfo: store._id,
+                                note: '',
+                                image: '',
                                 latitude: '',
                                 longtitude: '',
                                 status: 0,
-                                note: '',
-                                date: '',
+                                statusText: 'รอเข้าเยี่ยม',
                                 listOrder: [],
+                                date: '',
                             };
                             existingRoute.listStore.push(newData)
                         }
@@ -223,4 +230,80 @@ exports.addFromERP = async (req, res) => {
             message: e.message,
         })
     }
+}
+
+exports.checkIn = async (req, res) => {
+    upload(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ status: 'error', message: err.message })
+        }
+        try {
+            const { routeId, storeId, note, latitude, longtitude } = req.body
+
+            if (!routeId || !storeId) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'routeId and storeId are required',
+                })
+            }
+
+            const store = await Store.findOne({ storeId })
+            if (!store) {
+                return res.status(404).json({ status: '404', message: 'Store not found' })
+            }
+
+            let image = null
+            if (req.files) {
+                try {
+                    const files = req.files;
+                    const uploadedFile = await uploadFiles(
+                        files,
+                        path.join(__dirname, '../../public/images/stores/checkin'),
+                        store.area,
+                        storeId
+                    )
+
+                    if (uploadedFile.length > 0) {
+                        image = uploadedFile[0].path;
+                    }
+                } catch (fileError) {
+                    return res.status(500).json({
+                        status: 'error',
+                        message: `File upload error: ${fileError.message}`,
+                    })
+                }
+            }
+
+            const route = await Route.findOneAndUpdate(
+                { id: routeId, "listStore.storeInfo": store._id },
+                {
+                    $set: {
+                        "listStore.$.note": note,
+                        "listStore.$.image": image,
+                        "listStore.$.latitude": latitude,
+                        "listStore.$.longtitude": longtitude,
+                        "listStore.$.status": '2',
+                        "listStore.$.statusText": 'ขายไม่ได้',
+                        "listStore.$.date": new Date(),
+                    },
+                },
+                { new: true }
+            )
+
+            if (!route) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Route not found or listStore not matched',
+                })
+            }
+
+            res.status(200).json({
+                status: 'success',
+                message: 'check in successfully'
+            })
+        } catch (error) {
+            console.error('Error saving data to MongoDB:', error)
+            res.status(500).json({ status: 'error', message: 'Server Error' })
+        }
+    })
 }

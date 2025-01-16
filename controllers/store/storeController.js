@@ -221,7 +221,7 @@ exports.editStore = async (req, res) => {
             if (data[key] === '' || data[key] === null) {
                 delete data[key]
             }
-        });
+        })
 
         if (Object.keys(data).length === 0) {
             return res.status(400).json({ message: 'No valid fields to update' })
