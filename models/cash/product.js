@@ -7,28 +7,27 @@ const price = mongoose.Schema({
 
 const listUnit = mongoose.Schema({
     id: { type: String },
-    unitName: { type: String },
-    priceSale: { type: String },
-    priceRefund: { type: String },
-    priceChange: { type: String },
-    convert: convertSchema,
+    name: { type: String },
+    factor: { type: String },
+    price: price,
 })
 
 const productSchema = mongoose.Schema(
     {
         id: { type: String, require: true },
         name: { type: String, require: true },
-        group: { type: String },
+        group: { type: String, require: true },
         brand: { type: String, require: true },
         size: { type: String, require: true },
         flavour: { type: String, require: true },
         type: { type: String, require: true },
+        weightGross: { type: String, require: true },
+        weightNet: { type: String, require: true },
+        status: { type: String, require: true },
         statusSale: { type: String, require: true },
         statusWithdraw: { type: String, require: true },
         statusRefund: { type: String, require: true },
-        grossWeight: { type: String, require: true },
-        netWeight: { type: String, require: true },
-        unitList: [listUnit],
+        listUnit: [listUnit],
         createdDate: { type: Date, default: Date.now },
         updatedDate: { type: Date, default: Date.now },
     })
