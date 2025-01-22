@@ -6,40 +6,87 @@ const { Store } = require('../../models/cash/store')
 const { uploadFiles } = require('../../utilitys/upload')
 const multer = require('multer')
 const storage = multer.memoryStorage()
-const upload = multer({ storage: storage }).array('checkInImage',1)
+const upload = multer({ storage: storage }).array('checkInImage', 1)
 const path = require('path')
 
 exports.getRoute = async (req, res) => {
     try {
-        const { storeId, area, period } = req.query
+        const { storeId, area, period, routeId } = req.query
 
         if (!period) {
             return res.status(400).json({ status: 400, message: 'period is required!' })
         }
 
-        let response
+        let query = { period }
+        let response = []
+        let store = null
 
-        if (area) {
-            const query = { area, period }
-            response = await Route.find(query, { _id: 0, __v: 0 })
-                .populate('listStore.storeInfo', 'storeId name address typeName')
-        }
-        else if (storeId) {
-            const store = await Store.findOne({ storeId })
+        if (storeId) {
+            store = await Store.findOne({ storeId }).select('_id')
             if (!store) {
                 return res.status(404).json({ status: 404, message: 'Store not found!' })
             }
+        }
 
+        if (area && !routeId && !storeId) {
+            query.area = area
+            const routes = await Route.find(query, { _id: 0, __v: 0 })
+
+            response = routes.map((route) => ({
+                id: route.id,
+                period: route.period,
+                area: route.area,
+                day: route.day,
+                storeAll: route.storeAll,
+                storeBuy: route.storeBuy,
+                storeNotBuy: route.storeNotBuy,
+                storeCheckin: route.storeCheckin
+            }))
+        }
+
+        else if (area && routeId && !storeId) {
+            query.area = area
+            query.id = routeId
+
+            const routes = await Route.findOne(query)
+                .populate('listStore.storeInfo', 'storeId name address typeName')
+
+            if (!routes) {
+                return res.status(404).json({ status: 404, message: 'Route not found!' });
+            }
+            response = [routes]
+        }
+
+        else if (area && routeId && storeId) {
+            query.area = area
+            query.id = routeId
+
+            const routes = await Route.findOne(query)
+                .populate('listStore.storeInfo', 'storeId name address typeName')
+
+            if (!routes) {
+                return res.status(404).json({ status: 404, message: 'Route not found!' });
+            }
+
+            response = [
+                {
+                    ...routes.toObject(),
+                    listStore: routes.listStore.filter((store) => store.storeInfo && store.storeInfo.storeId === storeId)
+                },
+            ]
+        }
+
+        else if (!area && !routeId && storeId) {
             const routes = await Route.find({ period, "listStore.storeInfo": store._id })
                 .populate('listStore.storeInfo', 'storeId name address typeName')
 
             response = routes.map(route => ({
                 ...route.toObject(),
-                listStore: route.listStore.filter(store => store.storeInfo && store.storeInfo.storeId === storeId),
+                listStore: route.listStore.filter(store => store.storeInfo && store.storeInfo.storeId === storeId)
             }))
         }
         else {
-            return res.status(400).json({ status: 400, message: 'area or storeId is required!' })
+            return res.status(400).json({ status: 400, message: 'params is required!' })
         }
 
         res.status(200).json({
