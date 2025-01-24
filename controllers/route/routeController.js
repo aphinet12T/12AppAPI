@@ -1,4 +1,4 @@
-const { query } = require('express')
+// const { query } = require('express')
 const axios = require('axios')
 const { Route } = require('../../models/cash/route')
 const { period } = require('../../utilitys/datetime')
@@ -186,11 +186,10 @@ exports.addFromERP = async (req, res) => {
             })
         }
 
-        const allRoutes = await Route.find({ period: period() })
-        const routeMap = new Map(allRoutes.map((route) => [route.id, route]))
-        console.log('allRoute', allRoutes)
+        const route = await Route.find({ period: period() })
+        const routeMap = new Map(route.map((route) => [route.id, route]))
         let routeId
-        const latestRoute = allRoutes.sort((a, b) => b.id.localeCompare(a.id))[0]
+        const latestRoute = route.sort((a, b) => b.id.localeCompare(a.id))[0]
         if (!latestRoute) {
             routeId = `${period()}${response.data.area}R01`
             console.log('route', routeId)
