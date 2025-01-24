@@ -31,14 +31,17 @@ const RouteSchema = new mongoose.Schema({
 RouteSchema.virtual('storeAll').get(function () {
     return this.listStore.length
 })
+RouteSchema.virtual('storePending').get(function () {
+    return this.listStore.filter((store) => store.status === '0').length
+})
 RouteSchema.virtual('storeBuy').get(function () {
-    return this.listStore.filter((store) => store.status === '2').length
+    return this.listStore.filter((store) => store.status === '1').length
 })
 RouteSchema.virtual('storeNotBuy').get(function () {
-    return this.listStore.filter((store) => store.status === '3').length
+    return this.listStore.filter((store) => store.status === '2').length
 })
-RouteSchema.virtual('storeCheckin').get(function () {
-    return this.listStore.filter((store) => store.status === '1').length
+RouteSchema.virtual('storeTotal').get(function () {
+    return this.listStore.filter((store) => ['1','2'].includes(store.status)).length
 })
 RouteSchema.set('toJSON', { virtuals: true })
 RouteSchema.set('toObject', { virtuals: true })

@@ -38,9 +38,10 @@ exports.getRoute = async (req, res) => {
                 area: route.area,
                 day: route.day,
                 storeAll: route.storeAll,
-                storeBuy: route.storeBuy,
-                storeNotBuy: route.storeNotBuy,
-                storeCheckin: route.storeCheckin
+                storePending: route.storePending,
+                storeSell: route.storeBuy,
+                storeNotSell: route.storeNotBuy,
+                storeTotal: route.storeTotal
             }))
         }
 
