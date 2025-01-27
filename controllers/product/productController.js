@@ -1,16 +1,15 @@
-const { query } = require('express')
+const axios = require('axios')
 const { Product } = require('../../models/cash/product')
 
 exports.getProduct = async (req, res) => {
     try {
-        const { area, period } = req.query
+        const { type, group, size, brand } = req.query
 
-        if (!area || !period) {
+        if (!type && !group && !size && !brand) {
             return res.status(400).json({ status: 400, message: 'area and period are required!' })
         }
         let query = { area, period }
-        const response = await Route.find(query, { _id: 0, __v: 0 })
-            .populate('listStore.storeInfo', 'storeId name address typeName')
+        const response = await Product.find(query, { _id: 0, __v: 0 })
         res.status(200).json({
             status: '200',
             message: 'Success',
@@ -24,106 +23,68 @@ exports.getProduct = async (req, res) => {
 
 exports.addFromERP = async (req, res) => {
     try {
-        const dataArray = []
-        const listTypeUnitConvert = []
-        const response = await axios.post('http://58.181.206.159:9814/cms_api/cms_product.php')
-        for (let i = 0; i < response.data.length; i++) {
-            const idInsert = await Product.findOne({}, {_id: 0, idIndex: 1}).sort({idIndex: -1})
-            if (idInsert === null) {
-                var idIndex = 1
-            } else {
-                var idIndex = idInsert.idIndex + 1
-            }
-            response.data[i].idIndex = idIndex
-            response.data[i].status = 1
-
-            const StoreIf = await Product.findOne({id: response.data[i].id})
-            if (!StoreIf) {
-                if (response.data[i].type === 'พรีเมียม') {
-                    for(const listUnit of response.data[i].unitList){
-                        const dataUnitList = await Unit.findOne({idUnit:listUnit.id})
-                        const convertFact_obj = {
-                            unitId: listUnit.id,
-                            unitName: dataUnitList.nameEng,
-                            factor: 1,
-                            description:` 1 ${dataUnitList.nameEng} = 1 `
-                        }
-                        listTypeUnitConvert.push(convertFact_obj)
-                    }
-                    response.data[i].convertFact = listTypeUnitConvert
-                } else {
-                    const responseData = await axios.post('http://192.168.2.97:8383/M3API/ItemManage/Item/getItemConvertItemcode', {
-                        itcode : response.data[i].id
-                    })
-                    for (const listResUnit of responseData.data[0].type) {
-
-                        if(response.data[i].name.includes('ชนิดแผง')){
-                            if(listResUnit.unit === 'BAG'){
-                                var getUnitId = await Unit.findOne({nameEng: listResUnit.unit,nameThai:'แผง'})
-                            }else{
-                                var getUnitId = await Unit.findOne({nameEng: listResUnit.unit})
-                            }
-                        }else{
-                            var getUnitId = await Unit.findOne({nameEng: listResUnit.unit})
-                        }
-
-                        const convertFact_obj = {
-                            unitId: getUnitId.idUnit,
-                            unitName: getUnitId.nameEng,
-                            factor: listResUnit.factor,
-                            description:` 1 ${getUnitId.nameEng} = ${listResUnit.factor}`
-                        }
-                        listTypeUnitConvert.push(convertFact_obj)
-                    }
-                    response.data[i].convertFact = listTypeUnitConvert
-                }
-                await Product.create(response.data[i])
-                listTypeUnitConvert.length = 0
-            } else {
-                const idProductReplace = {
-                    idStore: response.data[i].storeId,
-                    name: response.data[i].name
-                }
-                dataArray.push(idProductReplace)
-            }
+        const response = await axios.get('http://58.181.206.159:9814/ca_api/ca_product.php')
+        if (!response.data || !Array.isArray(response.data)) {
+            return res.status(400).json({
+                status: 400,
+                message: 'Invalid response data from external API',
+            })
         }
 
-        var idUnitList = []
-        var idConvList = []
-        const UnitComConv = await Product.find()
-        for(const ListUnitComConv of UnitComConv ){
-            for(const unitList of ListUnitComConv.unitList){
-                idUnitList.push(unitList.id)
+        for (const listProduct of response.data) {
+            const productId = listProduct.id
+
+            const existingProduct = await Product.findOne({ id: productId })
+            if (existingProduct) {
+                console.log(`Product ID ${productId} already exists. Skipping.`)
+                continue
             }
-            for(const convList of ListUnitComConv.convertFact){
-                idConvList.push(convList.unitId)
-            }
-             const dataToPushConv = _.difference(idUnitList,idConvList)
-             console.log(dataToPushConv[0])
-            if(dataToPushConv.length !== 0){
-                const dataUnitConv = await Unit.findOne({idUnit:dataToPushConv[0]})
-                const dataPush = {
-                    unitId:dataToPushConv[0],
-                    unitName:dataUnitConv.nameEng,
-                    factor:1,
-                    description:`1 ${dataUnitConv.nameEng} = 1`
+
+            const itemConvertResponse = await axios.post(
+                'http://192.168.2.97:8383/M3API/ItemManage/Item/getItemConvertItemcode',
+                { itcode: productId }
+            )
+
+            const unitData = itemConvertResponse.data
+            const listUnit = listProduct.unitList.map((unit) => {
+                const matchingUnit = unitData[0]?.type.find((u) => u.unit === unit.unit)
+                return {
+                    id: unit.id,
+                    name: unit.name,
+                    factor: matchingUnit ? matchingUnit.factor : 1,
+                    price: {
+                        sale: unit.pricePerUnitSale,
+                        priceRefund: unit.pricePerUnitRefund,
+                    },
                 }
-                await Product.updateOne({id:ListUnitComConv.id},{$push:{convertFact:dataPush}})
-            }else{
+            })
 
-            }
-            idUnitList = []
-            idConvList = []
+            const newProduct = new Product({
+                id: listProduct.id,
+                name: listProduct.name,
+                group: listProduct.group,
+                brand: listProduct.brand,
+                size: listProduct.size,
+                flavour: listProduct.flavour,
+                type: listProduct.type,
+                weightGross: listProduct.weightGross,
+                weightNet: listProduct.weightNet,
+                statusSale: listProduct.statusSale,
+                statusRefund: listProduct.statusRefund,
+                statusWithdraw: listProduct.statusWithdraw,
+                listUnit: listUnit,
+            })
+            await newProduct.save()
         }
-        await createLog('200',req.method,req.originalUrl,res.body,'addProductFromM3 Successfully!')
-        res.status(200).json({status: 201, message: 'Product Added Succesfully', additionalData: dataArray})
-
+        res.status(200).json({
+            status: 200,
+            message: 'Products added successfully',
+        });
     } catch (e) {
-        console.log(e)
-        await createLog('500',req.method,req.originalUrl,res.body,e.message)
+        console.error(e);
         res.status(500).json({
             status: 500,
-            message: e.message
+            message: e.message,
         })
     }
 }

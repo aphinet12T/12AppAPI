@@ -330,7 +330,7 @@ exports.checkIn = async (req, res) => {
                         "listStore.$.latitude": latitude,
                         "listStore.$.longtitude": longtitude,
                         "listStore.$.status": '2',
-                        "listStore.$.statusText": 'ขายไม่ได้',
+                        "listStore.$.statusText": 'ไม่ซื้อ',
                         "listStore.$.date": new Date(),
                     },
                 },

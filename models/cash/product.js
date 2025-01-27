@@ -6,7 +6,7 @@ const price = mongoose.Schema({
 })
 
 const listUnit = mongoose.Schema({
-    id: { type: String },
+    unit: { type: String },
     name: { type: String },
     factor: { type: String },
     price: price,
@@ -23,10 +23,10 @@ const productSchema = mongoose.Schema(
         type: { type: String, require: true },
         weightGross: { type: String, require: true },
         weightNet: { type: String, require: true },
-        status: { type: String, require: true },
         statusSale: { type: String, require: true },
         statusWithdraw: { type: String, require: true },
         statusRefund: { type: String, require: true },
+        image: { type: String, default: '' },
         listUnit: [listUnit],
         createdDate: { type: Date, default: Date.now },
         updatedDate: { type: Date, default: Date.now },

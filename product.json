@@ -12,12 +12,11 @@
         "statusSale": "Y",
         "statusRefund": "Y",
         "statusWithdraw": "Y",
-        "status": "1",
         "image": "",
         "listUnit": [
             {
-                "id": "1",
-                "name": "CTN",
+                "unit": "CTN",
+                "name": "หีบ",
                 "factor": 6,
                 "price": {
                     "sale": 654,
@@ -25,8 +24,8 @@
                 }
             },
             {
-                "id": "2",
-                "name": "PCS",
+                "unit": "PCS",
+                "name": "ซอง",
                 "factor": 1,
                 "price": {
                     "sale": 109,
