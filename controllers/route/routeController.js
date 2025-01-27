@@ -479,3 +479,43 @@ exports.createFromChangeRoute = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' })
     }
 }
+
+exports.updateRoute = async (req, res) => {
+    try {
+        const { area, period, route, storeId } = req.body
+
+        if (!area || !period) {
+            return res.status(400).json({ message: 'Area and period are required.' })
+        }
+
+        const query = {
+            area,
+            period,
+        }
+
+        if (storeId) {
+            const store = await Store.findOne({ storeId })
+            if (!store) {
+                return res.status(404).json({ message: `Store with storeId ${storeId} not found.` })
+            }
+            query.storeInfo = store._id
+        }
+
+        if (route && !storeId) {
+            query.toRoute = route
+        }
+
+        const changeLogs = await RouteChangeLog.find(query)
+            .populate('storeInfo', 'storeId storeName')
+            .sort({ changedDate: -1 })
+
+        if (!changeLogs.length) {
+            return res.status(404).json({ message: 'No route change history found for the given criteria.' })
+        }
+
+        res.json({ message: 'Route change history retrieved successfully.', changeLogs })
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: 'Internal server error.' })
+    }
+}
