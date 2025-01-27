@@ -354,3 +354,128 @@ exports.checkIn = async (req, res) => {
         }
     })
 }
+
+exports.updateRoute = async (req, res) => {
+    try {
+        const { area, period, storeId, fromRoute, toRoute, changedBy } = req.body
+
+        if (!area || !period || !storeId || !fromRoute || !toRoute || !changedBy) {
+            return res.status(400).json({ message: 'Missing required fields.' })
+        }
+
+        const store = await Store.findOne({ storeId });
+        if (!store) {
+            return res.status(404).json({ message: `Store with storeId ${storeId} not found.` })
+        }
+
+        const existingRoute = await Route.findOne({
+            id: `${period}${area}${toRoute}`,
+            'listStore.storeInfo': store._id,
+        })
+
+        if (existingRoute) {
+            return res.status(409).json({
+                message: `Store already exists in route ${toRoute} for area ${area} and period ${period}.`
+            })
+        }
+
+        const routeChangeLog = new RouteChangeLog({
+            area,
+            period,
+            storeInfo: store._id,
+            fromRoute,
+            toRoute,
+            changedBy,
+            changedDate: new Date(),
+            status: '0',
+            approvedBy: '',
+            approvedDate: null,
+        });
+
+        await routeChangeLog.save()
+
+        res.status(201).json({
+            message: 'Route updated successfully and logged in RouteChangeLog.',
+            routeChangeLog
+        })
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: 'Internal server error.' })
+    }
+}
+
+exports.createFromChangeRoute = async (req, res) => {
+    try {
+        const { period, area } = req.body
+
+        if (!period || !area || area.length === 0) {
+            return res.status(400).json({ message: 'Period and area are required.' })
+        }
+
+        const newRoutes = []
+
+        for (const currentArea of area) {
+            const changeLogs = await RouteChangeLog.find({
+                area: currentArea,
+                period,
+                status: '0'
+            });
+
+            if (!changeLogs.length) {
+                console.warn(`No change logs found for area ${currentArea} with status = 0`)
+                continue
+            }
+
+            const routesGroupedByToRoute = changeLogs.reduce((grouped, log) => {
+                const routeId = `${period}${currentArea}${log.toRoute}`
+                if (!grouped[routeId]) {
+                    grouped[routeId] = {
+                        id: routeId,
+                        period,
+                        area: currentArea,
+                        toRoute: log.toRoute,
+                        listStore: [],
+                    };
+                }
+                grouped[routeId].listStore.push({
+                    storeInfo: log.storeInfo,
+                    status: log.status || '0',
+                    note: '',
+                    image: '',
+                    latitude: '0.00',
+                    longtitude: '0.00',
+                    date: Date.now(),
+                });
+                return grouped;
+            }, {});
+
+            for (const [routeId, routeData] of Object.entries(routesGroupedByToRoute)) {
+                const newRoute = new Route({
+                    id: routeId,
+                    period: routeData.period,
+                    area: routeData.area,
+                    day: '',
+                    listStore: routeData.listStore,
+                });
+
+                await newRoute.save();
+                newRoutes.push(newRoute);
+
+                await RouteChangeLog.updateMany(
+                    {
+                        area: currentArea,
+                        period,
+                        toRoute: routeData.toRoute,
+                        status: '0'
+                    },
+                    { $set: { status: '1' } }
+                );
+            }
+        }
+
+        res.json({ message: 'Routes created successfully.', newRoutes })
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: 'Internal server error' })
+    }
+}

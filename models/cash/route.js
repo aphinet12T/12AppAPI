@@ -25,7 +25,7 @@ const RouteSchema = new mongoose.Schema({
     period: { type: String, required: true, index: true },
     area: { type: String, required: true },
     day: { type: String, required: true },
-    listStore: [ListStoreSchema],
+    listStore: [ListStoreSchema]
 })
 
 RouteSchema.virtual('storeAll').get(function () {
@@ -41,7 +41,7 @@ RouteSchema.virtual('storeNotBuy').get(function () {
     return this.listStore.filter((store) => store.status === '2').length
 })
 RouteSchema.virtual('storeTotal').get(function () {
-    return this.listStore.filter((store) => ['1','2'].includes(store.status)).length
+    return this.listStore.filter((store) => ['1', '2'].includes(store.status)).length
 })
 RouteSchema.set('toJSON', { virtuals: true })
 RouteSchema.set('toObject', { virtuals: true })
