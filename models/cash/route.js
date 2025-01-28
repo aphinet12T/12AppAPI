@@ -34,18 +34,38 @@ RouteSchema.virtual('storeAll').get(function () {
 RouteSchema.virtual('storePending').get(function () {
     return this.listStore.filter((store) => store.status === '0').length
 })
-RouteSchema.virtual('storeBuy').get(function () {
+RouteSchema.virtual('storeSell').get(function () {
     return this.listStore.filter((store) => store.status === '1').length
 })
-RouteSchema.virtual('storeNotBuy').get(function () {
+RouteSchema.virtual('storeNotSell').get(function () {
     return this.listStore.filter((store) => store.status === '2').length
 })
 RouteSchema.virtual('storeTotal').get(function () {
     return this.listStore.filter((store) => ['1', '2'].includes(store.status)).length
 })
+RouteSchema.virtual('percentComplete').get(function () {
+    return parseFloat(((((this.storeTotal / this.storeAll) * 100) * 360) / 100).toFixed(2))
+})
+RouteSchema.virtual('percentEffective').get(function () {
+    return parseFloat(((this.storeTotal / this.storeAll) * 100).toFixed(2))
+})
 RouteSchema.set('toJSON', { virtuals: true })
 RouteSchema.set('toObject', { virtuals: true })
 
-const Route = mongoose.model('Route', RouteSchema)
+const RouteChangeLogSchema = new mongoose.Schema({
+    area: { type: String, required: true },
+    period: { type: String, required: true },
+    storeInfo: { type: String, ref: 'Store', required: true },
+    fromRoute: { type: String, required: true },
+    toRoute: { type: String, required: true },
+    changedBy: { type: String, required: true },
+    changedDate: { type: Date },
+    status: { type: String, default: '0' },
+    approvedBy: { type: String, default: '' },
+    approvedDate: { type: String, default: '' },
+})
 
-module.exports = { Route }
+const Route = mongoose.model('Route', RouteSchema)
+const RouteChangeLog = mongoose.model('RouteChangeLog', RouteChangeLogSchema)
+
+module.exports = { Route, RouteChangeLog }

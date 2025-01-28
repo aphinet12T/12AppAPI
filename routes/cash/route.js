@@ -6,5 +6,6 @@ const router = express.Router()
 router.get('/getRoute', getRoute)
 router.post('/checkIn', checkIn)
 router.post('/addFromERP', addFromERP)
+router.post('/change', addFromERP)
 
 module.exports = router

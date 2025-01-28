@@ -93,7 +93,7 @@ exports.addStore = async (req, res, next) => {
                 'postCode',
                 'latitude',
                 'longtitude',
-            ];
+            ]
 
             const similarStores = existingStores
                 .map((existingStore) => {
@@ -104,17 +104,17 @@ exports.addStore = async (req, res, next) => {
                             existingStore[field]?.toString() || ''
                         );
                         totalSimilarity += similarity;
-                    });
+                    })
 
-                    const averageSimilarity = totalSimilarity / fieldsToCheck.length;
+                    const averageSimilarity = totalSimilarity / fieldsToCheck.length
                     return {
                         store: existingStore,
                         similarity: averageSimilarity,
-                    };
+                    }
                 })
                 .filter((result) => result.similarity > 50)
                 .sort((a, b) => b.similarity - a.similarity)
-                .slice(0, 3);
+                .slice(0, 3)
 
             if (similarStores.length > 0) {
                 const sanitizedStores = similarStores.map((item) => ({
@@ -122,15 +122,15 @@ exports.addStore = async (req, res, next) => {
                         Object.entries(item.store._doc || item.store).filter(([key]) => key !== '_id')
                     ),
                     similarity: item.similarity.toFixed(2),
-                }));
+                }))
                 return res.status(200).json({
                     status: 'error',
                     message: 'similar store',
                     data: sanitizedStores,
-                });
+                })
             }
 
-            const uploadedFiles = [];
+            const uploadedFiles = []
             for (let i = 0; i < files.length; i++) {
                 const uploadedFile = await uploadFiles(
                     [files[i]],
@@ -142,10 +142,10 @@ exports.addStore = async (req, res, next) => {
                     name: uploadedFile[0].name,
                     path: uploadedFile[0].fullPath,
                     type: types[i],
-                });
+                })
             }
 
-            const imageList = uploadedFiles;
+            const imageList = uploadedFiles
 
             const policyAgree = {
                 status: store.policyConsent?.status || '',

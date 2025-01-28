@@ -1,6 +1,6 @@
 // const { query } = require('express')
 const axios = require('axios')
-const { Route } = require('../../models/cash/route')
+const { Route, RouteChangeLog } = require('../../models/cash/route')
 const { period } = require('../../utilitys/datetime')
 const { Store } = require('../../models/cash/store')
 const { uploadFiles } = require('../../utilitys/upload')
@@ -39,9 +39,11 @@ exports.getRoute = async (req, res) => {
                 day: route.day,
                 storeAll: route.storeAll,
                 storePending: route.storePending,
-                storeSell: route.storeBuy,
-                storeNotSell: route.storeNotBuy,
-                storeTotal: route.storeTotal
+                storeSell: route.storeSell,
+                storeNotSell: route.storeNotSell,
+                storeTotal: route.storeTotal,
+                percentComplete: route.percentComplete,
+                percentEffective: route.percentEffective
             }))
         }
 
@@ -390,7 +392,7 @@ exports.updateRoute = async (req, res) => {
             status: '0',
             approvedBy: '',
             approvedDate: null,
-        });
+        })
 
         await routeChangeLog.save()
 
@@ -480,42 +482,42 @@ exports.createFromChangeRoute = async (req, res) => {
     }
 }
 
-exports.updateRoute = async (req, res) => {
-    try {
-        const { area, period, route, storeId } = req.body
+// exports.updateRoute = async (req, res) => {
+//     try {
+//         const { area, period, route, storeId } = req.body
 
-        if (!area || !period) {
-            return res.status(400).json({ message: 'Area and period are required.' })
-        }
+//         if (!area || !period) {
+//             return res.status(400).json({ message: 'Area and period are required.' })
+//         }
 
-        const query = {
-            area,
-            period,
-        }
+//         const query = {
+//             area,
+//             period,
+//         }
 
-        if (storeId) {
-            const store = await Store.findOne({ storeId })
-            if (!store) {
-                return res.status(404).json({ message: `Store with storeId ${storeId} not found.` })
-            }
-            query.storeInfo = store._id
-        }
+//         if (storeId) {
+//             const store = await Store.findOne({ storeId })
+//             if (!store) {
+//                 return res.status(404).json({ message: `Store with storeId ${storeId} not found.` })
+//             }
+//             query.storeInfo = store._id
+//         }
 
-        if (route && !storeId) {
-            query.toRoute = route
-        }
+//         if (route && !storeId) {
+//             query.toRoute = route
+//         }
 
-        const changeLogs = await RouteChangeLog.find(query)
-            .populate('storeInfo', 'storeId storeName')
-            .sort({ changedDate: -1 })
+//         const changeLogs = await RouteChangeLog.find(query)
+//             .populate('storeInfo', 'storeId storeName')
+//             .sort({ changedDate: -1 })
 
-        if (!changeLogs.length) {
-            return res.status(404).json({ message: 'No route change history found for the given criteria.' })
-        }
+//         if (!changeLogs.length) {
+//             return res.status(404).json({ message: 'No route change history found for the given criteria.' })
+//         }
 
-        res.json({ message: 'Route change history retrieved successfully.', changeLogs })
-    } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: 'Internal server error.' })
-    }
-}
+//         res.json({ message: 'Route change history retrieved successfully.', changeLogs })
+//     } catch (error) {
+//         console.error(error)
+//         res.status(500).json({ message: 'Internal server error.' })
+//     }
+// }
