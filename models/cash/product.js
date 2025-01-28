@@ -28,8 +28,8 @@ const productSchema = mongoose.Schema(
         statusRefund: { type: String, require: true },
         image: { type: String, default: '' },
         listUnit: [listUnit],
-        createdDate: { type: Date, default: Date.now },
-        updatedDate: { type: Date, default: Date.now },
+        created: { type: Date, default: Date.now },
+        updated: { type: Date, default: Date.now },
     })
 
 const Product = mongoose.model('Product', productSchema)

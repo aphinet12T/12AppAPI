@@ -317,8 +317,6 @@ exports.checkInStore = async (req, res) => {
     const { latitude, longtitude } = req.body
 
     try {
-        console.log('store', storeId)
-        console.log('data', latitude, longtitude)
 
         if (!latitude || !longtitude) {
             return res.status(400).json({ status: 400, message: 'latitude and longtitude are required!' })
