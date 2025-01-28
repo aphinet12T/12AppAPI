@@ -53,12 +53,12 @@ exports.getStore = async (req, res) => {
 exports.addStore = async (req, res, next) => {
     upload(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ status: 'error', message: err.message })
+            return res.status(400).json({ status: '400', message: err.message })
         }
         try {
             if (!req.body.store) {
                 return res.status(400).json({
-                    status: 'error',
+                    status: '400',
                     message: 'Store data is required',
                 })
             }
@@ -69,14 +69,14 @@ exports.addStore = async (req, res, next) => {
 
             if (!store.name || !store.address) {
                 return res.status(400).json({
-                    status: 'error',
+                    status: '400',
                     message: 'Required fields are missing: name, address',
                 });
             }
 
             if (files.length !== types.length) {
                 return res.status(400).json({
-                    status: 'error',
+                    status: '400',
                     message: 'Number of files and types do not match',
                 });
             }
@@ -124,7 +124,7 @@ exports.addStore = async (req, res, next) => {
                     similarity: item.similarity.toFixed(2),
                 }))
                 return res.status(200).json({
-                    status: 'error',
+                    status: '200',
                     message: 'similar store',
                     data: sanitizedStores,
                 })
@@ -198,12 +198,12 @@ exports.addStore = async (req, res, next) => {
 
             await storeData.save()
             res.status(200).json({
-                status: 'success',
+                status: '200',
                 message: 'Store added successfully',
             })
         } catch (error) {
             console.error('Error saving store to MongoDB:', error)
-            res.status(500).json({ status: 'error', message: 'Server Error' })
+            res.status(500).json({ status: '500', message: 'Server Error' })
         }
     })
 }
@@ -224,7 +224,7 @@ exports.editStore = async (req, res) => {
         })
 
         if (Object.keys(data).length === 0) {
-            return res.status(400).json({ message: 'No valid fields to update' })
+            return res.status(400).json({ status: '400', message: 'No valid fields to update' })
         }
 
         const store = await Store.findOneAndUpdate({ storeId }, data, { new: true })
@@ -234,12 +234,13 @@ exports.editStore = async (req, res) => {
         }
 
         res.status(200).json({
+            status: '200',
             message: 'Store updated successfully',
             data: store,
         })
     } catch (error) {
         console.error('Error updating store:', error)
-        res.status(500).json({ message: 'Server error' })
+        res.status(500).json({ status: '500', message: 'Server error' })
     }
 }
 
@@ -298,7 +299,7 @@ exports.addFromERP = async (req, res) => {
             }
         }
         res.status(200).json({
-            status: 201,
+            status: '200',
             message: 'Store Added Succesfully',
             data: dataArray
         })
@@ -306,7 +307,7 @@ exports.addFromERP = async (req, res) => {
     } catch (error) {
         console.error('Error saving store to MongoDB:', error)
         res.status(500).json({
-            status: 'error',
+            status: '500',
             message: 'Server Error'
         })
     }
@@ -319,7 +320,7 @@ exports.checkInStore = async (req, res) => {
     try {
 
         if (!latitude || !longtitude) {
-            return res.status(400).json({ status: 400, message: 'latitude and longtitude are required!' })
+            return res.status(400).json({ status: '400', message: 'latitude and longtitude are required!' })
         }
 
         const result = await Store.findOneAndUpdate(
@@ -334,11 +335,11 @@ exports.checkInStore = async (req, res) => {
         )
 
         if (!result) {
-            return res.status(404).json({ status: 404, message: 'store not found!' })
+            return res.status(404).json({ status: '404', message: 'store not found!' })
         }
 
         res.status(200).json({
-            status: 201,
+            status: '200',
             message: 'Checked In Successfully',
             data: {
                 latitude: result.checkIn.latitude,
@@ -348,6 +349,6 @@ exports.checkInStore = async (req, res) => {
         })
     } catch (error) {
         console.error('Error updating store:', error)
-        res.status(500).json({ message: 'Server error' })
+        res.status(500).json({ status: '500', message: 'Server error' })
     }
 }

@@ -14,7 +14,7 @@ exports.getRoute = async (req, res) => {
         const { storeId, area, period, routeId } = req.query
 
         if (!period) {
-            return res.status(400).json({ status: 400, message: 'period is required!' })
+            return res.status(400).json({ status: '400', message: 'period is required!' })
         }
 
         let query = { period }
@@ -24,7 +24,7 @@ exports.getRoute = async (req, res) => {
         if (storeId) {
             store = await Store.findOne({ storeId }).select('_id')
             if (!store) {
-                return res.status(404).json({ status: 404, message: 'Store not found!' })
+                return res.status(404).json({ status: '404', message: 'Store not found!' })
             }
         }
 
@@ -55,7 +55,7 @@ exports.getRoute = async (req, res) => {
                 .populate('listStore.storeInfo', 'storeId name address typeName')
 
             if (!routes) {
-                return res.status(404).json({ status: 404, message: 'Route not found!' });
+                return res.status(404).json({ status: '404', message: 'Route not found!' });
             }
             response = [routes]
         }
@@ -68,7 +68,7 @@ exports.getRoute = async (req, res) => {
                 .populate('listStore.storeInfo', 'storeId name address typeName')
 
             if (!routes) {
-                return res.status(404).json({ status: 404, message: 'Route not found!' });
+                return res.status(404).json({ status: '404', message: 'Route not found!' });
             }
 
             response = [
@@ -89,17 +89,17 @@ exports.getRoute = async (req, res) => {
             }))
         }
         else {
-            return res.status(400).json({ status: 400, message: 'params is required!' })
+            return res.status(400).json({ status: '400', message: 'params is required!' })
         }
 
         res.status(200).json({
-            status: 200,
+            status: '200',
             message: 'Success',
             data: response,
         });
     } catch (error) {
         console.error(error)
-        res.status(500).json({ status: 500, message: error.message })
+        res.status(500).json({ status: '500', message: error.message })
     }
 }
 
@@ -184,7 +184,7 @@ exports.addFromERP = async (req, res) => {
         const response = await axios.post('http://58.181.206.159:9814/ca_api/ca_route.php')
         if (!response.data || !Array.isArray(response.data)) {
             return res.status(400).json({
-                status: 400,
+                status: '400',
                 message: 'Invalid response data from external API',
             })
         }
@@ -269,13 +269,13 @@ exports.addFromERP = async (req, res) => {
         }
 
         res.status(200).json({
-            status: 201,
+            status: '200',
             message: 'Add Route Successfully',
         })
     } catch (e) {
         console.error('Error in addFromERP:', e.message)
         res.status(500).json({
-            status: 500,
+            status: '500',
             message: e.message,
         })
     }
@@ -284,14 +284,14 @@ exports.addFromERP = async (req, res) => {
 exports.checkIn = async (req, res) => {
     upload(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ status: 'error', message: err.message })
+            return res.status(400).json({ status: '400', message: err.message })
         }
         try {
             const { routeId, storeId, note, latitude, longtitude } = req.body
 
             if (!routeId || !storeId) {
                 return res.status(400).json({
-                    status: 'error',
+                    status: '400',
                     message: 'routeId and storeId are required',
                 })
             }
@@ -317,7 +317,7 @@ exports.checkIn = async (req, res) => {
                     }
                 } catch (fileError) {
                     return res.status(500).json({
-                        status: 'error',
+                        status: '500',
                         message: `File upload error: ${fileError.message}`,
                     })
                 }
@@ -341,47 +341,58 @@ exports.checkIn = async (req, res) => {
 
             if (!route) {
                 return res.status(404).json({
-                    status: 'error',
+                    status: '404',
                     message: 'Route not found or listStore not matched',
                 })
             }
 
             res.status(200).json({
-                status: 'success',
+                status: '200',
                 message: 'check in successfully'
             })
         } catch (error) {
             console.error('Error saving data to MongoDB:', error)
-            res.status(500).json({ status: 'error', message: 'Server Error' })
+            res.status(500).json({ status: '500', message: 'Server Error' })
         }
     })
 }
 
-exports.updateRoute = async (req, res) => {
+exports.changeRoute = async (req, res) => {
     try {
         const { area, period, storeId, fromRoute, toRoute, changedBy } = req.body
 
         if (!area || !period || !storeId || !fromRoute || !toRoute || !changedBy) {
-            return res.status(400).json({ message: 'Missing required fields.' })
+            return res.status(400).json({ status: '400' , message: 'Missing required fields.' })
         }
 
-        const store = await Store.findOne({ storeId });
+        const store = await Store.findOne({ storeId })
         if (!store) {
-            return res.status(404).json({ message: `Store with storeId ${storeId} not found.` })
+            return res.status(404).json({ status: '404' , message: `Store with storeId ${storeId} not found.` })
         }
 
         const existingRoute = await Route.findOne({
-            id: `${period}${area}${toRoute}`,
+            id: `${period-1}${area}${toRoute}`,
             'listStore.storeInfo': store._id,
         })
 
-        if (existingRoute) {
+        const existingRouteChange = await RouteChangeLog.findOne({
+            area,
+            period,
+            storeInfo: store._id,
+            toRoute
+        })
+
+        console.log('555', existingRouteChange)
+        console.log('666', existingRoute)
+
+        if (existingRoute || existingRouteChange) {
             return res.status(409).json({
-                message: `Store already exists in route ${toRoute} for area ${area} and period ${period}.`
+                status: '409',
+                message: `Store already exists in route ${toRoute}`
             })
         }
 
-        const routeChangeLog = new RouteChangeLog({
+        const routeChange = new RouteChangeLog({
             area,
             period,
             storeInfo: store._id,
@@ -394,19 +405,20 @@ exports.updateRoute = async (req, res) => {
             approvedDate: null,
         })
 
-        await routeChangeLog.save()
+        // await routeChange.save()
 
         res.status(201).json({
-            message: 'Route updated successfully and logged in RouteChangeLog.',
-            routeChangeLog
+            status: '201',
+            message: 'Route has changed',
+            data: routeChange
         })
     } catch (error) {
         console.error(error)
-        res.status(500).json({ message: 'Internal server error.' })
+        res.status(500).json({ status: '500', message: 'Internal server error.' })
     }
 }
 
-exports.createFromChangeRoute = async (req, res) => {
+exports.createRoute = async (req, res) => {
     try {
         const { period, area } = req.body
 
@@ -421,7 +433,7 @@ exports.createFromChangeRoute = async (req, res) => {
                 area: currentArea,
                 period,
                 status: '0'
-            });
+            })
 
             if (!changeLogs.length) {
                 console.warn(`No change logs found for area ${currentArea} with status = 0`)
@@ -448,20 +460,20 @@ exports.createFromChangeRoute = async (req, res) => {
                     longtitude: '0.00',
                     date: Date.now(),
                 });
-                return grouped;
-            }, {});
+                return grouped
+            }, {})
 
             for (const [routeId, routeData] of Object.entries(routesGroupedByToRoute)) {
                 const newRoute = new Route({
                     id: routeId,
                     period: routeData.period,
                     area: routeData.area,
-                    day: '',
+                    day: '01',
                     listStore: routeData.listStore,
-                });
+                })
 
                 await newRoute.save();
-                newRoutes.push(newRoute);
+                newRoutes.push(newRoute)
 
                 await RouteChangeLog.updateMany(
                     {
@@ -471,53 +483,61 @@ exports.createFromChangeRoute = async (req, res) => {
                         status: '0'
                     },
                     { $set: { status: '1' } }
-                );
+                )
             }
         }
 
-        res.json({ message: 'Routes created successfully.', newRoutes })
+        res.status(200).json({ 
+            status: '200',
+            message: 'Routes created successfully.', 
+            newRoutes 
+        })
     } catch (error) {
         console.error(error)
         res.status(500).json({ message: 'Internal server error' })
     }
 }
 
-// exports.updateRoute = async (req, res) => {
-//     try {
-//         const { area, period, route, storeId } = req.body
+exports.routeHistory = async (req, res) => {
+    try {
+        const { area, period, route, storeId } = req.query
 
-//         if (!area || !period) {
-//             return res.status(400).json({ message: 'Area and period are required.' })
-//         }
+        if (!area || !period) {
+            return res.status(400).json({ message: 'Area and period are required.' })
+        }
 
-//         const query = {
-//             area,
-//             period,
-//         }
+        const query = {
+            area,
+            period,
+        }
 
-//         if (storeId) {
-//             const store = await Store.findOne({ storeId })
-//             if (!store) {
-//                 return res.status(404).json({ message: `Store with storeId ${storeId} not found.` })
-//             }
-//             query.storeInfo = store._id
-//         }
+        if (storeId) {
+            const store = await Store.findOne({ storeId })
+            if (!store) {
+                return res.status(404).json({ message: `Store with storeId ${storeId} not found.` })
+            }
+            query.storeInfo = store._id
+        }
 
-//         if (route && !storeId) {
-//             query.toRoute = route
-//         }
+        if (route && !storeId) {
+            query.toRoute = route
+        }
 
-//         const changeLogs = await RouteChangeLog.find(query)
-//             .populate('storeInfo', 'storeId storeName')
-//             .sort({ changedDate: -1 })
+        const changeLogs = await RouteChangeLog.find(query)
+            .populate('storeInfo', 'storeId name')
+            .sort({ changedDate: -1 })
 
-//         if (!changeLogs.length) {
-//             return res.status(404).json({ message: 'No route change history found for the given criteria.' })
-//         }
+        if (!changeLogs.length) {
+            return res.status(404).json({ status: '404' , message: 'History not found.' })
+        }
 
-//         res.json({ message: 'Route change history retrieved successfully.', changeLogs })
-//     } catch (error) {
-//         console.error(error)
-//         res.status(500).json({ message: 'Internal server error.' })
-//     }
-// }
+        res.status(200).json({ 
+            status: '200', 
+            message: 'Success', 
+            data: changeLogs 
+        })
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: 'Internal server error.' })
+    }
+}
